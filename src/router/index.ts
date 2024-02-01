@@ -1,1 +1,1 @@
-export default class routes {}
+export default async function routes() {}
