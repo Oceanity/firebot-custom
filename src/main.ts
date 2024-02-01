@@ -28,6 +28,7 @@ const script: Firebot.CustomScript<Params> = {
   run: (runRequest) => {
     const { logger } = runRequest.modules;
     logger.info(runRequest.parameters.message);
+    useRoutes();
   },
 };
 
