@@ -1,4 +1,5 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
+import useRoutes from "@/router";
 
 interface Params {
   message: string;
