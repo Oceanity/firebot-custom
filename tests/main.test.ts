@@ -2,7 +2,6 @@ import {
     RunRequest,
     ScriptModules,
 } from "@crowbartools/firebot-custom-scripts-types";
-import { ArgumentsOf } from "ts-jest";
 import customScript from "../src/main";
 test("main default export is the custom script", () => {
     expect(customScript).not.toBeUndefined();
@@ -12,11 +11,8 @@ test("main default export is the custom script", () => {
 });
 
 test("run() calls logger.info with the message", async () => {
-    const mockInfoLog = jest.fn<
-        void,
-        ArgumentsOf<ScriptModules["logger"]["info"]>
-    >();
-    const expectedMessage = "foobar";
+    const mockInfoLog = jest.fn<void, [ScriptModules["logger"]["info"]]>();
+    const expectedMessage = "oshi";
     const runRequest = {
         parameters: { message: expectedMessage },
         modules: { logger: { info: mockInfoLog } },
