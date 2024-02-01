@@ -1,4 +1,4 @@
-name: Check pull request source branch
+name: Ensure only `dev` can merge into `main`
 on:
   pull_request_target:
     types:
