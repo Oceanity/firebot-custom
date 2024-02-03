@@ -1,13 +1,14 @@
-const path = require("path");
-const TerserPlugin = require("terser-webpack-plugin");
-const packageJson = require("./package.json");
+import path from "path";
+import TerserPlugin from "terser-webpack-plugin";
+import packageJson from "./package.json";
+import { Configuration } from "webpack";
 
-module.exports = {
+const config: Configuration = {
   target: "node",
   mode: "production",
   devtool: false,
   entry: {
-    main: "./src/main.ts",
+    main: "@/main.ts",
   },
   output: {
     libraryTarget: "commonjs2",
@@ -17,6 +18,9 @@ module.exports = {
   },
   resolve: {
     extensions: [".ts", ".js"],
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
   module: {
     rules: [
@@ -43,3 +47,5 @@ module.exports = {
     ],
   },
 };
+
+export default config;
