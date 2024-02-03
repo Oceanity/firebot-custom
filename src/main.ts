@@ -3,7 +3,6 @@ import useRouter from "@/router";
 
 interface Params {
   message: string;
-  message: string;
 }
 
 const script: Firebot.CustomScript<Params> = {
