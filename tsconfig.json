@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
     "outDir": "./dist/",
     "target": "ES6",
     "module": "CommonJS",
@@ -10,8 +11,7 @@
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     }
-  },
-  "include": ["./src/**/*"]
+  }
 }

@@ -1,5 +1,5 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
-import useRoutes from "@/router";
+import useRouter from "@/router";
 
 interface Params {
   message: string;
@@ -26,9 +26,9 @@ const script: Firebot.CustomScript<Params> = {
     };
   },
   run: (runRequest) => {
-    const { logger } = runRequest.modules;
+    const { logger, httpServer } = runRequest.modules;
     logger.info(runRequest.parameters.message);
-    useRoutes();
+    useRouter(httpServer);
   },
 };
 
