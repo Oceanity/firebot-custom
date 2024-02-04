@@ -31,10 +31,29 @@ export default class PlexAuth {
   public async login() {
     const plexOauth = new PlexOauth(clientInformation);
 
-    plexOauth.requestHostedLoginURL().then((data) => {
-      let [hostedUILink, pinId] = data;
-      open(hostedUILink);
-    });
+    const [hostedUILink, pin] = await plexOauth.requestHostedLoginURL();
+    log.info(hostedUILink);
+
+    // plexOauth.requestHostedLoginURL().then((data) => {
+    //   let [hostedUILink, pinId] = data;
+    //   open(hostedUILink);
+
+    //   //   await new Promise<string>((resolve, reject) => {
+
+    //   //   });
+
+    //   plexOauth
+    //     .checkForAuthToken(pinId)
+    //     .then((authToken) => {
+    //       log.info(authToken); // Returns the auth token if set, otherwise returns null
+
+    //       // An auth token will only be null if the user never signs into the hosted UI, or you stop checking for a new one before they can log in
+    //     })
+    //     .catch((err) => {
+    //       log.error(err);
+    //       throw err;
+    //     });
+    // });
   }
 
   // Load Saved Plex token from <scripts>/oceanity/plex-toolkit/token.json
