@@ -1,5 +1,6 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
+import PlexAuth from "@/plex-overlay/api/auth";
 
 interface Params {
   message: string;
@@ -8,7 +9,7 @@ interface Params {
 const script: Firebot.CustomScript<Params> = {
   getScriptManifest: () => ({
     name: "Oshi's Custom Firebot Startup",
-    description: "Extends Firebot functionality",
+    description: "Extends Firebot functionality <a href='#test'>Test</a>",
     author: "Oceanity",
     version: "1.0",
     firebotVersion: "5",
@@ -24,10 +25,13 @@ const script: Firebot.CustomScript<Params> = {
       type: "button",
     },
   }),
-  run: (runRequest) => {
+  run: async (runRequest) => {
     const { logger, httpServer } = runRequest.modules;
     logger.info(runRequest.parameters.message);
-    useRouter(httpServer);
+    useRouter(logger, httpServer);
+
+    const plexAuth = new PlexAuth(logger);
+    await plexAuth.login();
   },
 };
 
