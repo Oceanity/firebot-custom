@@ -18,8 +18,8 @@ export type PredictionLibrary = {
 };
 
 export type PredictionOptions = {
-  titleChoices: string[];
-  optionChoices: string[][];
+  titleChoices: StringOfLength<1, 45>[];
+  outcomeChoices: StringOfLength<1, 25>[][];
 };
 
 export type PredictionResponse = ResponseData & {
