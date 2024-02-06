@@ -19,8 +19,12 @@ export const predictions: PredictionLibrary = {
     ],
   },
   oceanSpiderHouse: {
-    titleChoices: ["Oshi's House"],
-    optionChoices: [[""], ["Cute birb (1 Item)"], ["Oshi Cute (2+ Items)"]],
+    titleChoices: ["Oshi's House (Items in OSH)"],
+    optionChoices: [
+      ["Nobody's Home (0)"],
+      ["Cute birb (1 Item)"],
+      ["Oshi Cute (2+ Items)"],
+    ],
   },
 };
 
