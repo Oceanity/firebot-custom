@@ -22,8 +22,8 @@ export const predictions: PredictionLibrary = {
     titleChoices: ["Oshi's House (Items in OSH)"],
     optionChoices: [
       ["Nobody's Home (0)"],
-      ["Cute birb (1 Item)"],
-      ["Oshi Cute (2+ Items)"],
+      ["Cute birb (1)"],
+      ["Oshi Cute (2+)"],
     ],
   },
 };

@@ -1,6 +1,6 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
-import registerPredictionEndpoints from "@api/predictions";
+import registerPredictionEndpoints from "@api/predictionApi";
 
 interface Params {
   message: string;
