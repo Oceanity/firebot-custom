@@ -1,6 +1,7 @@
 import { ResponseData } from "@t/requests";
 
 export type Prediction = {
+  broadcaster_id: string;
   title: string;
   outcomes: PredictionOutcome[];
   prediction_window: PredictionWindow;

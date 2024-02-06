@@ -16,8 +16,8 @@ export default async function registerPredictionEndpoints(
     "/predictions",
     "GET",
     (req: Request, res: Response) => {
-      const data = getRequestDataFromUri(req.url);
-      const response = getRandomPrediction(data.params.slug);
+      const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
+      const response = getRandomPrediction(slug, broadcaster_id);
 
       if (response.status != 200) {
         log.error(`Error ${response.status}: ${response.message}`);

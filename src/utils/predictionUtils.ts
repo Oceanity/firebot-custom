@@ -28,7 +28,10 @@ export const predictions: PredictionLibrary = {
   },
 };
 
-export const getRandomPrediction = (slug: string): PredictionResponse => {
+export const getRandomPrediction = (
+  slug: string,
+  broadcaster_id: string,
+): PredictionResponse => {
   if (!isValidPredictionSlug) {
     return {
       status: 409,
@@ -39,6 +42,7 @@ export const getRandomPrediction = (slug: string): PredictionResponse => {
   }
   const { titleChoices, optionChoices } = predictions[slug];
   const prediction: Prediction = {
+    broadcaster_id,
     title: getRandomString(titleChoices),
     outcomes: [],
     prediction_window: 300,
