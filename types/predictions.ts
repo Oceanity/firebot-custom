@@ -1,14 +1,13 @@
 import { ResponseData } from "@t/requests";
-import { StringOfLength } from "@t/strings";
 
 export type Prediction = {
-  title: StringOfLength<1, 45>;
+  title: string;
   outcomes: PredictionOutcome[];
   prediction_window: PredictionWindow;
 };
 
 type PredictionOutcome = {
-  title: StringOfLength<1, 25>;
+  title: string;
 };
 
 type PredictionWindow = 30 | 60 | 120 | 300 | 600 | 900 | 1200 | 1800;
@@ -18,8 +17,8 @@ export type PredictionLibrary = {
 };
 
 export type PredictionOptions = {
-  titleChoices: StringOfLength<1, 45>[];
-  outcomeChoices: StringOfLength<1, 25>[][];
+  titleChoices: string[];
+  optionChoices: string[][];
 };
 
 export type PredictionResponse = ResponseData & {

@@ -4,39 +4,23 @@ import {
   PredictionResponse,
 } from "@t/predictions";
 import { getRandomString } from "@u/array";
-import { stringOfLength } from "@t/strings";
 
 export const predictions: PredictionLibrary = {
   swampSpiderHouse: {
     titleChoices: [
-      stringOfLength("Squamp? (Items in SSH)", 1, 45),
-      stringOfLength("Squamp??? (Items in SSH)", 1, 45),
-      stringOfLength("Romp in the Squamp (Items in SSH)", 1, 45),
+      "Squamp? (Items in SSH)",
+      "Squamp??? (Items in SSH)",
+      "Romp in the Squamp (Items in SSH)",
     ],
-    outcomeChoices: [
-      [
-        stringOfLength("Squampn't (0)", 1, 25),
-        stringOfLength("Swamp Spider House (0)", 1, 25),
-        stringOfLength("asdlkfjasdlfkjasdlkfjasdkljfasdkljf", 1, 25),
-      ],
-      [
-        stringOfLength("squamp (1)", 1, 25),
-        stringOfLength("Lil' Squampy (1)", 1, 25),
-      ],
-      [
-        stringOfLength("SQUAMP (2+)", 1, 25),
-        stringOfLength("Totem PROVIDES (2+)", 1, 25),
-        stringOfLength("MAX SQUAMP (2+)", 1, 25),
-      ],
+    optionChoices: [
+      ["Squampn't (0)", "Swamp Spider House (0)"],
+      ["squamp (1)", "Lil' Squampy (1)"],
+      ["SQUAMP (2+)", "Totem PROVIDES (2+)", "MAX SQUAMP (2+)"],
     ],
   },
   oceanSpiderHouse: {
-    titleChoices: [stringOfLength("Oshi's House", 1, 45)],
-    outcomeChoices: [
-      [stringOfLength("Nobody's Home (0 Items)", 1, 25)],
-      [stringOfLength("Cute birb (1 Item)", 1, 25)],
-      [stringOfLength("Oshi Cute (2+ Items)", 1, 25)],
-    ],
+    titleChoices: ["Oshi's House"],
+    optionChoices: [[""], ["Cute birb (1 Item)"], ["Oshi Cute (2+ Items)"]],
   },
 };
 
@@ -49,16 +33,16 @@ export const getRandomPrediction = (slug: string): PredictionResponse => {
         : `Required param \`slug\` missing`,
     };
   }
-  const { titleChoices, outcomeChoices } = predictions[slug];
+  const { titleChoices, optionChoices } = predictions[slug];
   const prediction: Prediction = {
-    title: stringOfLength(getRandomString(titleChoices), 1, 45),
+    title: getRandomString(titleChoices),
     outcomes: [],
     prediction_window: 300,
   };
 
-  for (let o of outcomeChoices) {
+  for (let o of optionChoices) {
     prediction.outcomes.push({
-      title: stringOfLength(getRandomString(o), 1, 25),
+      title: getRandomString(o),
     });
   }
 
