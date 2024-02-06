@@ -20,6 +20,9 @@ const config: Configuration = {
     extensions: [".ts", ".js"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@t": path.resolve(__dirname, "./types"),
+      "@u": path.resolve(__dirname, "./src/utils"),
+      "@api": path.resolve(__dirname, "./src/api"),
     },
   },
   module: {

@@ -12,8 +12,11 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@t/*": ["./types/*"],
+      "@u/*": ["./src/utils/*"],
+      "@api/*": ["./src/api/*"]
     }
   },
-  "include": ["./src/**/*"]
+  "include": ["./src/**/*", "./types/**/*"]
 }
