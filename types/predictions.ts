@@ -19,7 +19,7 @@ export type PredictionLibrary = {
 
 export type PredictionOptions = {
   titleChoices: string[];
-  optionChoices: string[][];
+  outcomeChoices: string[][];
 };
 
 export type PredictionResponse = ResponseData & {
