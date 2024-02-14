@@ -26,7 +26,7 @@ const script: Firebot.CustomScript<Params> = {
     },
   }),
   run: (runRequest) => {
-    const { logger, httpServer } = runRequest.modules;
+    const { logger, httpServer, JsonDb } = runRequest.modules;
     logger.info(runRequest.parameters.message);
     useRouter(httpServer);
     registerPredictionEndpoints(logger, httpServer);
