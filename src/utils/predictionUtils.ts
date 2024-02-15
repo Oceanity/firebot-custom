@@ -1,7 +1,8 @@
 import {
   Prediction,
   PredictionLibrary,
-  PredictionResponse,
+  CreatePredictionResponse,
+  CreatePredictionRequest,
 } from "@t/predictions";
 import { getRandomString } from "@u/array";
 
@@ -42,7 +43,7 @@ export const predictions: PredictionLibrary = {
 export const getRandomPrediction = (
   slug: string,
   broadcaster_id: string,
-): PredictionResponse => {
+): CreatePredictionResponse => {
   if (!isValidPredictionSlug) {
     return {
       status: 409,
@@ -52,7 +53,7 @@ export const getRandomPrediction = (
     };
   }
   const { titleChoices, outcomeChoices } = predictions[slug];
-  const prediction: Prediction = {
+  const predictionRequest: CreatePredictionRequest = {
     broadcaster_id,
     title: getRandomString(titleChoices),
     outcomes: [],
@@ -60,14 +61,14 @@ export const getRandomPrediction = (
   };
 
   for (let o of outcomeChoices) {
-    prediction.outcomes.push({
+    predictionRequest.outcomes.push({
       title: getRandomString(o),
     });
   }
 
   return {
     status: 200,
-    prediction,
+    predictionRequest,
   };
 };
 
