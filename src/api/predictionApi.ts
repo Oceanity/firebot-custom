@@ -1,5 +1,4 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
-import { HttpServerManager } from "@crowbartools/firebot-custom-scripts-types/types/modules/http-server-manager";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
 import { getRandomPrediction } from "@u/predictionUtils";
@@ -11,7 +10,7 @@ export default class PredictionApi {
   private modules: ScriptModules;
 
   private readonly apiNamespace: string = "oceanity";
-  private readonly apiRoot: string = "/predictions";
+  private readonly apiBase: string = "/predictions";
 
   constructor(
     path: string = resolve(__dirname, "./predictions.db"),
@@ -29,7 +28,7 @@ export default class PredictionApi {
     // Prediction Root
     httpServer.registerCustomRoute(
       this.apiNamespace,
-      this.apiRoot,
+      this.apiBase,
       "GET",
       (req: Request, res: Response) => {
         const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
@@ -37,14 +36,38 @@ export default class PredictionApi {
 
         if (response.status != 200) {
           logger.error(`Error ${response.status}: ${response.message}`);
-          return;
+          return false;
         }
 
-        logger.info(`Pulled prediction ${response.prediction.title}`);
-        res.send(response.prediction);
+        logger.info(`Pulled prediction ${response.predictionRequest.title}`);
+        res.send(response.predictionRequest);
+      },
+    );
+
+    httpServer.registerCustomRoute(
+      this.apiNamespace,
+      `${this.apiBase}/create`,
+      "POST",
+      (req: Request, res: Response) => {
+        res.send(true);
       },
     );
 
     return true;
+  }
+
+  public async unregisterEndpoints(): Promise<boolean> {
+    const { httpServer, logger } = this.modules;
+    let response = true;
+
+    logger.info("Unregistering Prediction Endpoints...");
+
+    response &&= httpServer.unregisterCustomRoute(
+      this.apiNamespace,
+      this.apiBase,
+      "GET",
+    );
+
+    return response;
   }
 }

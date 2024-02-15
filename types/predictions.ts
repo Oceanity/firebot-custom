@@ -1,10 +1,8 @@
 import { ResponseData } from "@t/requests";
 
 export type Prediction = {
-  broadcaster_id: string;
   title: string;
   outcomes: PredictionOutcome[];
-  prediction_window: PredictionWindow;
 };
 
 type PredictionOutcome = {
@@ -22,6 +20,17 @@ export type PredictionOptions = {
   outcomeChoices: string[][];
 };
 
-export type PredictionResponse = ResponseData & {
-  prediction?: Prediction;
+export type CreatePredictionResponse = ResponseData & {
+  predictionRequest?: CreatePredictionRequest;
+};
+
+export type CreatePredictionRequest = Prediction & {
+  broadcaster_id: string;
+  prediction_window: PredictionWindow;
+};
+
+export type CreatePredictionLibraryEntryRequest = {
+  slug: string;
+  titleChoices?: string[];
+  outcomeChoices?: string[][];
 };
