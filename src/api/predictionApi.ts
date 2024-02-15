@@ -12,6 +12,11 @@ export default class PredictionApi {
   private readonly apiNamespace: string = "oceanity";
   private readonly apiBase: string = "/predictions";
 
+  /**
+   * Instantiates Prediction API class
+   * @param {string} path Path to save Predictions.db file
+   * @param {ScriptModules} modules ScriptModules reference
+   */
   constructor(
     path: string = resolve(__dirname, "./predictions.db"),
     modules: ScriptModules,
@@ -21,6 +26,10 @@ export default class PredictionApi {
     this.db = new modules.JsonDb(path, true, true);
   }
 
+  /**
+   * Registers Prediction endpoints to Firebot's HttpServer
+   * @returns {boolean} `true` if operation was successful
+   */
   public async registerEndpoints(): Promise<boolean> {
     const { httpServer, logger } = this.modules;
     logger.info("Registering Prediction Endpoints....");
@@ -56,6 +65,10 @@ export default class PredictionApi {
     return true;
   }
 
+  /**
+   * Unregisters Prediction Endpoints from Firebot's HttpServer
+   * @returns {boolean} `true` if operation was successful
+   */
   public async unregisterEndpoints(): Promise<boolean> {
     const { httpServer, logger } = this.modules;
     let response = true;

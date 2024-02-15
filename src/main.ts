@@ -1,6 +1,7 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
 import PredictionApi from "@api/predictionApi";
+import { resolve } from "path";
 
 interface Params {
   message: string;
@@ -31,7 +32,10 @@ const script: Firebot.CustomScript<Params> = {
     useRouter(httpServer);
 
     // Predictions
-    const predictionApi = new PredictionApi("./predictions.db", modules);
+    const predictionApi = new PredictionApi(
+      resolve(__dirname, "./predictions.db"),
+      modules,
+    );
     await predictionApi.registerEndpoints();
   },
 };
