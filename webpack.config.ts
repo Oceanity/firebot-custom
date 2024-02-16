@@ -1,4 +1,4 @@
-import path from "path";
+import { resolve } from "path";
 import TerserPlugin from "terser-webpack-plugin";
 import packageJson from "./package.json";
 import { Configuration } from "webpack";
@@ -13,16 +13,16 @@ const config: Configuration = {
   output: {
     libraryTarget: "commonjs2",
     libraryExport: "default",
-    path: path.resolve(__dirname, "./dist"),
+    path: resolve(__dirname, "./dist"),
     filename: `${packageJson.scriptOutputName}.js`,
   },
   resolve: {
     extensions: [".ts", ".js"],
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@t": path.resolve(__dirname, "./types"),
-      "@u": path.resolve(__dirname, "./src/utils"),
-      "@api": path.resolve(__dirname, "./src/api"),
+      "@": resolve(__dirname, "./src"),
+      "@t": resolve(__dirname, "./types"),
+      "@u": resolve(__dirname, "./src/utils"),
+      "@api": resolve(__dirname, "./src/api"),
     },
   },
   module: {
