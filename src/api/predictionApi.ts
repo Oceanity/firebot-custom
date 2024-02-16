@@ -1,11 +1,12 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
-import PredictionUtils, { getRandomPrediction } from "@/utils/predictionUtils";
+import PredictionUtils, { getRandomPrediction } from "@u/predictionUtils";
+import { CreatePredictionOptionsRequest } from "@t/predictions";
 import { resolve } from "path";
 
 export default class PredictionApi {
-  private predictionUtils: PredictionUtils;
+  private predictions: PredictionUtils;
   private modules: ScriptModules;
 
   private readonly apiNamespace: string = "oceanity";
@@ -21,14 +22,14 @@ export default class PredictionApi {
     modules: ScriptModules,
   ) {
     this.modules = modules;
-    this.predictionUtils = new PredictionUtils(path, modules);
+    this.predictions = new PredictionUtils(path, modules);
   }
 
   /**
    * Initializes DbUtils and registers endpoints
    */
   public async setup(): Promise<void> {
-    await this.predictionUtils.setup();
+    await this.predictions.setup();
     await this.registerEndpoints();
   }
 
@@ -61,9 +62,13 @@ export default class PredictionApi {
 
     httpServer.registerCustomRoute(
       this.apiNamespace,
-      `${this.apiBase}/create`,
+      `${this.apiBase}/save`,
       "POST",
       (req: Request, res: Response) => {
+        const { slug, titleChoices, outcomeChoices } = req.body as CreatePredictionOptionsRequest;
+
+        this.predictions.pushPredictionOptions(slug, { titleChoices, outcomeChoices });
+
         res.send(true);
       },
     );

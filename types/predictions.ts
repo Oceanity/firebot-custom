@@ -34,7 +34,7 @@ export type CreatePredictionRequest = Prediction & {
   prediction_window: PredictionWindow;
 };
 
-export type CreatePredictionLibraryEntryRequest = {
+export type CreatePredictionOptionsRequest = {
   slug: string;
   titleChoices?: string[];
   outcomeChoices?: string[][];

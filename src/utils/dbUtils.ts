@@ -39,8 +39,8 @@ export default class DbUtils {
 
   /**
    * Gets data from loaded db at given path
-   * @param {string} path Path of db to pull data from
-   * @param {T?} defaults Default data (optional) to fill db at path if none found
+   * @param {string} path Path of data to pull from db
+   * @param {T?} defaults (Optional) Default data to fill db at path if none found
    * @returns {T} Returns data <T> stored in the loaded db at the given path
    */
   public async get<T>(path: string, defaults?: T): Promise<T> {
@@ -50,6 +50,24 @@ export default class DbUtils {
     } catch (err) {
       if (defaults) this.db.push(path, defaults, true);
       logger.error(err);
+    }
+  }
+
+  /**
+   *  Puts data into loaded db at given path
+   * @param {string} path Path of data to pull from db
+   * @param {T} data Data to be put in db
+   * @param {boolean} override If `true`, will overwrite data in the db
+   * @returns {boolean} `true` if operation completed successfully
+   */
+  public async push<T>(path: string, data: T, override?: boolean): Promise<boolean> {
+    const { logger } = this.modules;
+    try {
+      this.db.push(path, data, override);
+      return true;
+    } catch (err) {
+      logger.error(err);
+      return false;
     }
   }
 

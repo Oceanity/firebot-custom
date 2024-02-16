@@ -62,6 +62,14 @@ export default class PredictionUtils {
     return await this.db.get<PredictionOptions>(`/predictions/${slug}`, defaults);
   }
 
+  public async pushPredictionOptions(slug: string, options: PredictionOptions): Promise<boolean> {
+    if (!this.isPredictionOptionsValid(options)) return false;
+
+    this.db.push<PredictionOptions>(`/predictions/${slug}`, options);
+
+    return true;
+  }
+
   /**
    * Returns a randomized Prediction based on data saved in db
    * @param {string} slug Key where PredictionOptions are saved in the db
@@ -85,6 +93,7 @@ export default class PredictionUtils {
 
     return response;
   }
+
 
   /**
    * Checks to ensure DbUtils has completed setup and can be used
