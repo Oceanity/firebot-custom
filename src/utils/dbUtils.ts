@@ -3,7 +3,7 @@ import { join, dirname } from "path";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { JsonDB } from "node-json-db";
 
-export default class DbHelper {
+export default class DbUtils {
   private readonly path: string;
   private readonly modules: ScriptModules;
   private readonly dir: string;
@@ -12,7 +12,7 @@ export default class DbHelper {
   private ready: boolean = false;
 
   /**
-   * Instantiates DbHelper class
+   * Instantiates DbUtils class
    * @param {string} path The relative path to the created .db file
    * @param {ScriptModules} modules ScriptModules reference for logging
    */
@@ -31,7 +31,7 @@ export default class DbHelper {
     logger.info(`Ensuring directory "${this.dir}" exists...`);
     await ensureDir(this.dir);
 
-    //@ts-ignore
+    //@ts-expect-error 2351
     this.db = new JsonDb(this.path, true, true);
 
     this.ready = true;
@@ -54,8 +54,8 @@ export default class DbHelper {
   }
 
   /**
-   * Check if DbHelper has run `setup()` and is able to handle commands
-   * @returns {boolean} `true` if DbHelper has run `setup()` and is able to handle commands
+   * Check if DbUtils has run `setup()` and is able to handle commands
+   * @returns {boolean} `true` if DbUtils has run `setup()` and is able to handle commands
    */
   public isReady = (): boolean => this.ready;
 }

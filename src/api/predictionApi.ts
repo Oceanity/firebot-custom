@@ -1,12 +1,11 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
-import { getRandomPrediction } from "@u/predictionUtils";
+import PredictionUtils, { getRandomPrediction } from "@/utils/predictionUtils";
 import { resolve } from "path";
-import DbHelper from "@u/dbUtils";
 
 export default class PredictionApi {
-  private dbHelper: DbHelper;
+  private predictionUtils: PredictionUtils;
   private modules: ScriptModules;
 
   private readonly apiNamespace: string = "oceanity";
@@ -18,18 +17,18 @@ export default class PredictionApi {
    * @param {ScriptModules} modules ScriptModules reference
    */
   constructor(
-    path: string = resolve(__dirname, "./predictions.db"),
+    path: string = resolve(__dirname, "./db/predictions.db"),
     modules: ScriptModules,
   ) {
     this.modules = modules;
-    this.dbHelper = new DbHelper(path, modules);
+    this.predictionUtils = new PredictionUtils(path, modules);
   }
 
   /**
-   * Initializes DbHelper and registers endpoints
+   * Initializes DbUtils and registers endpoints
    */
   public async setup(): Promise<void> {
-    await this.dbHelper.setup();
+    await this.predictionUtils.setup();
     await this.registerEndpoints();
   }
 

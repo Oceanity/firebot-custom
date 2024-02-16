@@ -7,25 +7,28 @@ import {
   CreatePredictionRequest,
 } from "@t/predictions";
 import { getRandomItem } from "@u/array";
-import DbHelper from "./dbUtils";
+import DbUtils from "./dbUtils";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 
-export default class PredictionHelper {
-  private readonly db: DbHelper;
+export default class PredictionUtils {
+  private readonly db: DbUtils;
   private readonly modules: ScriptModules;
-  private library: PredictionLibrary;
 
+  /**
+   * Instantiates PredictionUtils class
+   * @param {string} path Relative path to save db to
+   * @param {ScriptModules} modules ScriptModules reference
+   */
   constructor(path: string, modules: ScriptModules) {
-    this.db = new DbHelper(path, modules);
+    this.db = new DbUtils(path, modules);
     this.modules = modules;
   }
 
   /**
-   * Initializes DbHelper and fills library
+   * Initializes DbUtils
    */
   public async setup(): Promise<void> {
     await this.db.setup();
-    this.library = await this.getAll();
   }
 
   /**
@@ -50,12 +53,7 @@ export default class PredictionHelper {
    * @returns {PredictionOptions} PredictionOptions retrieved from db at key `slug`
    */
   public async getPredictionOptions(slug: string): Promise<PredictionOptions> {
-    const { logger } = this.modules;
-
-    if (!this.db.isReady()) {
-      logger.error(`Prediction Db is not ready, cannot getPredictionOptions(${slug})`);
-      return null;
-    }
+    if (!this.isDbReady(`getPredictionOptions(${slug})`)) return null;
 
     const defaults: PredictionOptions = {
       titleChoices: [],
@@ -70,15 +68,10 @@ export default class PredictionHelper {
    * @returns {Prediction} Randomized Prediction object
    */
   public async getRandomPrediction(slug: string): Promise<Prediction> {
-    const { logger } = this.modules;
-
-    if (!this.db.isReady()) {
-      logger.error(`Prediction Db is not ready, cannot getRandomPrediction(${slug})`);
-      return null;
-    }
+    if (!this.isDbReady(`getRandomPrediction(${slug})`)) return null;
 
     const options: PredictionOptions = await this.getPredictionOptions(slug);
-    if (!this.validatePredictionOptions(options, slug)) return null;
+    if (!this.isPredictionOptionsValid(options, slug)) return null;
 
     const response: Prediction = new PredictionClass();
 
@@ -93,30 +86,48 @@ export default class PredictionHelper {
     return response;
   }
 
+  /**
+   * Checks to ensure DbUtils has completed setup and can be used
+   * @param {string?} method (Optional) Name of method to include in logger output
+   * @returns {boolean} `true` if `db` has completed `setup()`
+   */
+  private isDbReady = (method?: string): boolean => {
+    const { logger } = this.modules;
+
+    if (!this.db.isReady()) {
+      logger.error(`Prediction Db is not ready, cannot complete method ${method}`);
+      return false;
+    }
+
+    return true;
+  }
 
   /**
    * Checks if provided PredictionOptions are valid
    * @param {PredictionOptions} options PredictionOptions to validate
-   * @param {string?} slug (Optional) slug to include in logger output
+   * @param {string?} slug (Optional) Name of slug to include in logger output
    * @returns {boolean} `true` if `options` are valid PredictionOptions
    */
-  private validatePredictionOptions = (options: PredictionOptions, slug?: string): boolean => {
+  private isPredictionOptionsValid = (options: PredictionOptions, slug?: string): boolean => {
     const { logger } = this.modules;
+    const slugString = slug ? ` with slug ${slug}` : "";
 
     if (!options) {
-      logger.error(`No Prediction Options found using slug ${slug}`);
+      logger.error(`No PredictionOptions found${ slugString }`);
       return false;
     }
 
     if (!options.titleChoices.length) {
-      logger.error(`No titleChoices found on Prediction with slug ${slug}`);
-      return null;
+      logger.error(`No titleChoices found on PredictionOptions${ slugString }`);
+      return false;
     }
 
     if (options.outcomeChoices.length < 2) {
-      logger.error(`Prediction with slug ${slug} does not have enough outcomes`);
-      return null;
+      logger.error(`Prediction${ slugString } does not have enough outcomes`);
+      return false;
     }
+
+    return true;
   }
 }
 
