@@ -9,6 +9,7 @@ export default class DbHelper {
   private readonly dir: string;
 
   private db: JsonDB;
+  private ready: boolean = false;
 
   /**
    * Instantiates DbHelper class
@@ -32,5 +33,29 @@ export default class DbHelper {
 
     //@ts-ignore
     this.db = new JsonDb(this.path, true, true);
+
+    this.ready = true;
   }
+
+  /**
+   * Gets data from loaded db at given path
+   * @param {string} path Path of db to pull data from
+   * @param {T?} defaults Default data (optional) to fill db at path if none found
+   * @returns {T} Returns data <T> stored in the loaded db at the given path
+   */
+  public async get<T>(path: string, defaults?: T): Promise<T> {
+    const { logger } = this.modules;
+    try {
+      return this.db.getData(path) as T;
+    } catch (err) {
+      if (defaults) this.db.push(path, defaults, true);
+      logger.error(err);
+    }
+  }
+
+  /**
+   * Check if DbHelper has run `setup()` and is able to handle commands
+   * @returns {boolean} `true` if DbHelper has run `setup()` and is able to handle commands
+   */
+  public isReady = (): boolean => this.ready;
 }
