@@ -2,10 +2,11 @@ import {
   Prediction,
   PredictionLibrary,
   PredictionOptions,
+  PredictionClass,
   CreatePredictionResponse,
   CreatePredictionRequest,
 } from "@t/predictions";
-import { getRandomString } from "@u/array";
+import { getRandomItem } from "@u/array";
 import DbHelper from "./dbUtils";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 
@@ -52,9 +53,7 @@ export default class PredictionHelper {
     const { logger } = this.modules;
 
     if (!this.db.isReady()) {
-      logger.error(
-        `Prediction Db is not ready, cannot getPredictionOptions(${slug})`,
-      );
+      logger.error(`Prediction Db is not ready, cannot getPredictionOptions(${slug})`);
       return null;
     }
 
@@ -62,10 +61,62 @@ export default class PredictionHelper {
       titleChoices: [],
       outcomeChoices: [],
     };
-    return await this.db.get<PredictionOptions>(
-      `/predictions/${slug}`,
-      defaults,
-    );
+    return await this.db.get<PredictionOptions>(`/predictions/${slug}`, defaults);
+  }
+
+  /**
+   * Returns a randomized Prediction based on data saved in db
+   * @param {string} slug Key where PredictionOptions are saved in the db
+   * @returns {Prediction} Randomized Prediction object
+   */
+  public async getRandomPrediction(slug: string): Promise<Prediction> {
+    const { logger } = this.modules;
+
+    if (!this.db.isReady()) {
+      logger.error(`Prediction Db is not ready, cannot getRandomPrediction(${slug})`);
+      return null;
+    }
+
+    const options: PredictionOptions = await this.getPredictionOptions(slug);
+    if (!this.validatePredictionOptions(options, slug)) return null;
+
+    const response: Prediction = new PredictionClass();
+
+    response.title = getRandomItem<string>(options.titleChoices);
+
+    for (const outcomeSet of options.outcomeChoices) {
+      response.outcomes.push({
+        title: getRandomItem<string>(outcomeSet)
+      });
+    }
+
+    return response;
+  }
+
+
+  /**
+   * Checks if provided PredictionOptions are valid
+   * @param {PredictionOptions} options PredictionOptions to validate
+   * @param {string?} slug (Optional) slug to include in logger output
+   * @returns {boolean} `true` if `options` are valid PredictionOptions
+   */
+  private validatePredictionOptions = (options: PredictionOptions, slug?: string): boolean => {
+    const { logger } = this.modules;
+
+    if (!options) {
+      logger.error(`No Prediction Options found using slug ${slug}`);
+      return false;
+    }
+
+    if (!options.titleChoices.length) {
+      logger.error(`No titleChoices found on Prediction with slug ${slug}`);
+      return null;
+    }
+
+    if (options.outcomeChoices.length < 2) {
+      logger.error(`Prediction with slug ${slug} does not have enough outcomes`);
+      return null;
+    }
   }
 }
 
@@ -74,7 +125,7 @@ export const predictions: PredictionLibrary = {
     titleChoices: [
       "Squamp? (Items in SSH)",
       "Squamp??? (Items in SSH)",
-      "Romp in the Squamp (Items in SSH)",
+      "Romp in the Squamp (Items in SSH)"
     ],
     outcomeChoices: [
       ["SQUAMP (2+)", "Totem PROVIDES (2+)", "MAX SQUAMP (2+)"],
@@ -87,7 +138,7 @@ export const predictions: PredictionLibrary = {
     outcomeChoices: [
       ["Oshi Cute (2+)"],
       ["Cute birb (1)"],
-      ["Nobody's Home (0)"],
+      ["Nobody's Home (0)"]
     ],
   },
   graveyard: {
@@ -103,29 +154,24 @@ export const predictions: PredictionLibrary = {
   },
 };
 
-export const getRandomPrediction = (
-  slug: string,
-  broadcaster_id: string,
-): CreatePredictionResponse => {
+export const getRandomPrediction = (slug: string, broadcaster_id: string): CreatePredictionResponse => {
   if (!isValidPredictionSlug) {
     return {
       status: 409,
-      message: slug
-        ? `No prediction with slug ${slug}`
-        : `Required param \`slug\` missing`,
+      message: slug ? `No prediction with slug ${slug}` : `Required param \`slug\` missing`,
     };
   }
   const { titleChoices, outcomeChoices } = predictions[slug];
   const predictionRequest: CreatePredictionRequest = {
     broadcaster_id,
-    title: getRandomString(titleChoices),
+    title: getRandomItem<string>(titleChoices),
     outcomes: [],
     prediction_window: 300,
   };
 
-  for (let o of outcomeChoices) {
+  for (const o of outcomeChoices) {
     predictionRequest.outcomes.push({
-      title: getRandomString(o),
+      title: getRandomItem<string>(o),
     });
   }
 
@@ -135,5 +181,4 @@ export const getRandomPrediction = (
   };
 };
 
-export const isValidPredictionSlug = (slug: string): boolean =>
-  slug && predictions.hasOwnProperty(slug);
+export const isValidPredictionSlug = (slug: string): boolean => slug && predictions[slug] != null;

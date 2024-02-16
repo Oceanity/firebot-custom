@@ -5,7 +5,12 @@ export type Prediction = {
   outcomes: PredictionOutcome[];
 };
 
-type PredictionOutcome = {
+export class PredictionClass implements Prediction {
+  title = "";
+  outcomes: PredictionOutcome[] = [];
+}
+
+export type PredictionOutcome = {
   title: string;
 };
 
