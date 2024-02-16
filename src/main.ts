@@ -32,11 +32,8 @@ const script: Firebot.CustomScript<Params> = {
     useRouter(httpServer);
 
     // Predictions
-    const predictionApi = new PredictionApi(
-      resolve(__dirname, "./predictions.db"),
-      modules,
-    );
-    await predictionApi.registerEndpoints();
+    const predictionApi = new PredictionApi("./db/predictions.db", modules);
+    await predictionApi.setup();
   },
 };
 

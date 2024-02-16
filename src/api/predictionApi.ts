@@ -2,11 +2,11 @@ import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
 import { getRandomPrediction } from "@u/predictionUtils";
-import { JsonDB } from "node-json-db";
 import { resolve } from "path";
+import DbHelper from "@u/dbUtils";
 
 export default class PredictionApi {
-  private db: JsonDB;
+  private dbHelper: DbHelper;
   private modules: ScriptModules;
 
   private readonly apiNamespace: string = "oceanity";
@@ -22,15 +22,22 @@ export default class PredictionApi {
     modules: ScriptModules,
   ) {
     this.modules = modules;
-    // @ts-ignore
-    this.db = new modules.JsonDb(path, true, true);
+    this.dbHelper = new DbHelper(path, modules);
+  }
+
+  /**
+   * Initializes DbHelper and registers endpoints
+   */
+  public async setup(): Promise<void> {
+    await this.dbHelper.setup();
+    await this.registerEndpoints();
   }
 
   /**
    * Registers Prediction endpoints to Firebot's HttpServer
    * @returns {boolean} `true` if operation was successful
    */
-  public async registerEndpoints(): Promise<boolean> {
+  private async registerEndpoints(): Promise<boolean> {
     const { httpServer, logger } = this.modules;
     logger.info("Registering Prediction Endpoints....");
 
