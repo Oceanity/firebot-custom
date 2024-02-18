@@ -49,7 +49,7 @@ export default class DbUtils {
       return this.db.getData(path) as T;
     } catch (err) {
       if (defaults) this.db.push(path, defaults, true);
-      logger.error(err);
+      logger.error(`Failed to get "${path}" from "${this.path}"`);
       return null;
     }
   }
