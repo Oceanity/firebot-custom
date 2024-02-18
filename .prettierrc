@@ -1,6 +1,7 @@
 {
-  "printWidth": 80,
+  "printWidth": 120,
   "editor.formatOnSave": true,
+  "editor.formatOnCopy": false,
   "proseWrap": "always",
   "tabWidth": 2,
   "requireConfig": false,

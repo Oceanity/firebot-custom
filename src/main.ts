@@ -1,8 +1,8 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
-import registerPredictionEndpoints from "@api/predictionApi";
+import PredictionApi from "@api/predictionApi";
 
-interface Params {
+type Params = {
   message: string;
 }
 
@@ -25,11 +25,14 @@ const script: Firebot.CustomScript<Params> = {
       type: "button",
     },
   }),
-  run: (runRequest) => {
-    const { logger, httpServer } = runRequest.modules;
-    logger.info(runRequest.parameters.message);
+  run: async (runRequest) => {
+    const { modules } = runRequest;
+    const { httpServer } = modules;
     useRouter(httpServer);
-    registerPredictionEndpoints(logger, httpServer);
+
+    // Predictions
+    const predictionApi = new PredictionApi("./db/predictions.db", modules);
+    await predictionApi.setup();
   },
 };
 

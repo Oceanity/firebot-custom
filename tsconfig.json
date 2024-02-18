@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strict": true,
     "outDir": "./dist/",
     "target": "ES6",
     "module": "CommonJS",
@@ -11,6 +12,7 @@
     "downlevelIteration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "strictNullChecks": true,
     "paths": {
       "@/*": ["./src/*"],
       "@t/*": ["./types/*"],
