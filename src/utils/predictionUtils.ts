@@ -2,8 +2,6 @@ import {
   Prediction,
   PredictionLibrary,
   PredictionOptions,
-  CreatePredictionResponse,
-  CreatePredictionRequest,
   PredictionOptionsResponse,
   PredictionResponse,
 } from "@t/predictions";
