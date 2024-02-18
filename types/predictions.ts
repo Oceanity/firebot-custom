@@ -25,7 +25,7 @@ export type PredictionOptions = {
 };
 
 export type PredictionOptionsResponse = ResponseData & {
-  options: PredictionOptions;
+  options?: PredictionOptions;
 }
 
 export type CreatePredictionResponse = ResponseData & {
@@ -39,6 +39,6 @@ export type CreatePredictionRequest = Prediction & {
 
 export type CreatePredictionOptionsRequest = {
   slug: string;
-  titleChoices?: string[];
-  outcomeChoices?: string[][];
+  titleChoices: string[];
+  outcomeChoices: string[][];
 };

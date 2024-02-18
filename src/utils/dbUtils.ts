@@ -8,7 +8,7 @@ export default class DbUtils {
   private readonly modules: ScriptModules;
   private readonly dir: string;
 
-  private db: JsonDB;
+  private db?: JsonDB;
   private ready: boolean = false;
 
   /**
@@ -43,14 +43,14 @@ export default class DbUtils {
    * @param {T?} defaults (Optional) Default data to fill db at path if none found
    * @returns {T} Returns data <T> stored in the loaded db at the given path
    */
-  public async get<T>(path: string, defaults?: T): Promise<T> {
+  public async get<T>(path: string, defaults?: T): Promise<T | undefined> {
     const { logger } = this.modules;
     try {
-      return this.db.getData(path) as T;
+      return this.db?.getData(path) as T;
     } catch (err) {
-      if (defaults) this.db.push(path, defaults, true);
+      if (defaults) this.db?.push(path, defaults, true);
       logger.error(`Failed to get "${path}" from "${this.path}"`);
-      return null;
+      return undefined;
     }
   }
 
@@ -64,10 +64,10 @@ export default class DbUtils {
   public async push<T>(path: string, data: T, override?: boolean): Promise<boolean> {
     const { logger } = this.modules;
     try {
-      this.db.push(path, data, override);
+      this.db?.push(path, data, override);
       return true;
     } catch (err) {
-      logger.error(err);
+      logger.error(`Failed to push "${typeof data}" to "${path}" in "${this.path}"`);
       return false;
     }
   }

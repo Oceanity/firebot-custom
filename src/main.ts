@@ -2,7 +2,7 @@ import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
 import PredictionApi from "@api/predictionApi";
 
-interface Params {
+type Params = {
   message: string;
 }
 

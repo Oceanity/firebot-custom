@@ -1,6 +1,6 @@
 
 
-export const getRandomItem = <T>(arr: T[]): T =>
+export const getRandomItem = <T>(arr: T[]): T | null =>
   arr[randomIndex(arr)] ?? null;
 
 const randomIndex = (arr: unknown[]): number =>

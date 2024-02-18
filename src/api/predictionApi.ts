@@ -39,16 +39,16 @@ export default class PredictionApi {
    */
   private async registerEndpoints(): Promise<boolean> {
     const { modules, prefix, base } = this;
-    const reg = modules.httpServer.registerCustomRoute;
+    const { httpServer } = modules;
 
     let response = true;
 
     modules.logger.info("Registering Prediction Endpoints....");
-    response &&= reg(prefix, base, "GET", this.getPredictionHandler);
-    response &&= reg(prefix, base, "POST", this.postPredictionHandler);
-    response &&= reg(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
+    response &&= httpServer.registerCustomRoute(prefix, base, "GET", this.getPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, base, "POST", this.postPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
 
-    return true;
+    return response;
   }
 
   /**
@@ -78,6 +78,11 @@ export default class PredictionApi {
 
     modules.logger.info("Getting random Prediction...");
     const response = await predictions.getRandomPrediction(slug);
+
+    if (!response) {
+      modules.logger.info(`Could not get random prediction from slug ${slug}`);
+      return false;
+    }
 
     if (response.status != 200) {
       modules.logger.error(`Error ${response.status}: ${response.message}`);

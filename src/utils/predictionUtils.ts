@@ -8,6 +8,10 @@ import {
 import { getRandomItem } from "@u/array";
 import DbUtils from "./dbUtils";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
+import {
+  Respond409Conflict,
+  Respond503ServiceUnavailable
+} from "@t/apiResponses";
 
 export default class PredictionUtils {
   private readonly db: DbUtils;
@@ -34,12 +38,12 @@ export default class PredictionUtils {
    * Gets all Predictions in db as PredictionLibrary
    * @returns {Promise<PredictionLibrary>} all Predictions stored in db as PredictionLibrary
    */
-  public async getAll(): Promise<PredictionLibrary> {
+  public async getAll(): Promise<PredictionLibrary | undefined> {
     const { logger } = this.modules;
 
     if (!this.db.isReady()) {
       logger.error(`Prediction Db is not ready, cannot getAll()`);
-      return null;
+      return undefined;
     }
 
     const defaults: PredictionLibrary = {};
@@ -52,19 +56,15 @@ export default class PredictionUtils {
    * @returns {PredictionOptions} PredictionOptions retrieved from db at key `slug`
    */
   public async getPredictionOptions(slug: string): Promise<PredictionOptionsResponse> {
-    if (!this.isDbReady(`getPredictionOptions(${slug})`)) return null;
+    if (!this.isDbReady(`getPredictionOptions(${slug})`))
+      return Respond409Conflict("Prediction Db not ready") as PredictionOptionsResponse;
 
     const options = await this.db.get<PredictionOptions>(`/${slug}`);
 
-    return options
-      ? {
-        status: 200,
-        options
-      }
-      : {
-        status: 409,
+    return  {
+        status: options ? 200 : 409,
         message: `Could not get prediction options for slug "${slug}"`,
-        options: null
+        options
       }
   }
 
@@ -85,18 +85,19 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {Prediction} Randomized Prediction object
    */
-  public async getRandomPrediction(slug: string): Promise<PredictionResponse> {
-    if (!this.isDbReady(`getRandomPrediction(${slug})`)) return null;
+  public async getRandomPrediction(slug: string): Promise<PredictionResponse | null> {
+    if (!this.isDbReady(`getRandomPrediction(${slug})`))
+      return Respond503ServiceUnavailable("Prediction Db not ready") as PredictionResponse;
 
     const response: PredictionOptionsResponse = await this.getPredictionOptions(slug);
-    if (response.status != 200 || !this.isPredictionOptionsValid(response.options)) return null;
+    if (response.status != 200 || !response.options || !this.isPredictionOptionsValid(response.options)) return null;
 
     const { titleChoices, outcomeChoices } = response.options;
     const prediction: Prediction = {
-      title: getRandomItem<string>(titleChoices),
+      title: getRandomItem<string>(titleChoices) ?? "",
       outcomes: outcomeChoices
         .filter(o => o.length)
-        .map(o => ({ title: getRandomItem<string>(o) }))
+        .map(o => ({ title: getRandomItem<string>(o) ?? "" }))
     }
 
     return {
@@ -129,7 +130,7 @@ export default class PredictionUtils {
    */
   private isPredictionValid = (prediction: Prediction): boolean =>
     prediction
-    && prediction.title.length
+    && prediction.title.length != 0
     && prediction.outcomes.length > 1;
 
   /**
@@ -140,7 +141,7 @@ export default class PredictionUtils {
    */
   private isPredictionOptionsValid = (options: PredictionOptions): boolean =>
     options
-    && options.titleChoices.length
+    && options.titleChoices.length != 0
     && options.outcomeChoices.filter(o =>
       o.length
     ).length > 1
