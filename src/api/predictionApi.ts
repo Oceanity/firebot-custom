@@ -1,7 +1,7 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
-import PredictionUtils, { getRandomPrediction } from "@u/predictionUtils";
+import PredictionUtils from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest } from "@t/predictions";
 import { resolve } from "path";
 
@@ -46,31 +46,43 @@ export default class PredictionApi {
       this.apiNamespace,
       this.apiBase,
       "GET",
-      (req: Request, res: Response) => {
+      async (req: Request, res: Response) => {
         const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
-        const response = getRandomPrediction(slug, broadcaster_id);
+        logger.info("Getting random Prediction...");
+        const response = await this.predictions.getRandomPrediction(slug);
 
         if (response.status != 200) {
           logger.error(`Error ${response.status}: ${response.message}`);
           return false;
         }
 
-        logger.info(`Pulled prediction ${response.predictionRequest.title}`);
-        res.send(response.predictionRequest);
+        logger.info(`Pulled prediction ${response.prediction.title}`);
+        res.send({ broadcaster_id, ...response.prediction });
       },
     );
 
     httpServer.registerCustomRoute(
       this.apiNamespace,
-      `${this.apiBase}/save`,
+      this.apiBase,
       "POST",
-      (req: Request, res: Response) => {
+      async (req: Request, res: Response) => {
         const { slug, titleChoices, outcomeChoices } = req.body as CreatePredictionOptionsRequest;
 
         this.predictions.pushPredictionOptions(slug, { titleChoices, outcomeChoices });
 
         res.send(true);
       },
+    );
+
+    httpServer.registerCustomRoute(
+      this.apiNamespace,
+      `${this.apiBase}/titles`,
+      "GET",
+      async (req: Request, res: Response) => {
+        const { slug } = getRequestDataFromUri(req.url).params;
+
+        res.send((await this.predictions.getPredictionOptions(slug))?.options.titleChoices ?? []);
+      }
     );
 
     return true;

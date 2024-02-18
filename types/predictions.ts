@@ -5,9 +5,8 @@ export type Prediction = {
   outcomes: PredictionOutcome[];
 };
 
-export class PredictionClass implements Prediction {
-  title = "";
-  outcomes: PredictionOutcome[] = [];
+export type PredictionResponse = ResponseData & {
+  prediction: Prediction;
 }
 
 export type PredictionOutcome = {
@@ -24,6 +23,10 @@ export type PredictionOptions = {
   titleChoices: string[];
   outcomeChoices: string[][];
 };
+
+export type PredictionOptionsResponse = ResponseData & {
+  options: PredictionOptions;
+}
 
 export type CreatePredictionResponse = ResponseData & {
   predictionRequest?: CreatePredictionRequest;

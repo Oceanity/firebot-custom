@@ -50,6 +50,7 @@ export default class DbUtils {
     } catch (err) {
       if (defaults) this.db.push(path, defaults, true);
       logger.error(err);
+      return null;
     }
   }
 

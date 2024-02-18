@@ -2,9 +2,10 @@ import {
   Prediction,
   PredictionLibrary,
   PredictionOptions,
-  PredictionClass,
   CreatePredictionResponse,
   CreatePredictionRequest,
+  PredictionOptionsResponse,
+  PredictionResponse,
 } from "@t/predictions";
 import { getRandomItem } from "@u/array";
 import DbUtils from "./dbUtils";
@@ -52,22 +53,31 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {PredictionOptions} PredictionOptions retrieved from db at key `slug`
    */
-  public async getPredictionOptions(slug: string): Promise<PredictionOptions> {
+  public async getPredictionOptions(slug: string): Promise<PredictionOptionsResponse> {
     if (!this.isDbReady(`getPredictionOptions(${slug})`)) return null;
 
     const defaults: PredictionOptions = {
       titleChoices: [],
       outcomeChoices: [],
     };
-    return await this.db.get<PredictionOptions>(`/predictions/${slug}`, defaults);
+    const options = await this.db.get<PredictionOptions>(`/${slug}`, defaults);
+
+    return {
+      status: options ? 200 : 404,
+      options
+    }
   }
 
+  /**
+   * Push PredictionOptions to db at provided slug
+   * @param {string} slug Key where PredictionOptions are saved to the db
+   * @param {PredictionOptions} options PredictionOptions to save to the db
+   * @returns {boolean} `true` if operation completed successfully
+   */
   public async pushPredictionOptions(slug: string, options: PredictionOptions): Promise<boolean> {
     if (!this.isPredictionOptionsValid(options)) return false;
 
-    this.db.push<PredictionOptions>(`/predictions/${slug}`, options);
-
-    return true;
+    return await this.db.push<PredictionOptions>(`/${slug}`, options);
   }
 
   /**
@@ -75,23 +85,24 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {Prediction} Randomized Prediction object
    */
-  public async getRandomPrediction(slug: string): Promise<Prediction> {
+  public async getRandomPrediction(slug: string): Promise<PredictionResponse> {
     if (!this.isDbReady(`getRandomPrediction(${slug})`)) return null;
 
-    const options: PredictionOptions = await this.getPredictionOptions(slug);
-    if (!this.isPredictionOptionsValid(options, slug)) return null;
+    const response: PredictionOptionsResponse = await this.getPredictionOptions(slug);
+    if (response.status != 200 || !this.isPredictionOptionsValid(response.options)) return null;
 
-    const response: Prediction = new PredictionClass();
-
-    response.title = getRandomItem<string>(options.titleChoices);
-
-    for (const outcomeSet of options.outcomeChoices) {
-      response.outcomes.push({
-        title: getRandomItem<string>(outcomeSet)
-      });
+    const { titleChoices, outcomeChoices } = response.options;
+    const prediction: Prediction = {
+      title: getRandomItem<string>(titleChoices),
+      outcomes: outcomeChoices
+        .filter(o => o.length)
+        .map(o => ({ title: getRandomItem<string>(o) }))
     }
 
-    return response;
+    return {
+      status: this.isPredictionValid(prediction) ? 200 : 409,
+      prediction
+    }
   }
 
 
@@ -112,32 +123,27 @@ export default class PredictionUtils {
   }
 
   /**
+   * Checks if provided Prediction is valid
+   * @param {Prediction} prediction Prediction to validate
+   * @returns {boolean} `true` if `prediction` is valid Prediction
+   */
+  private isPredictionValid = (prediction: Prediction): boolean =>
+    prediction
+    && prediction.title.length
+    && prediction.outcomes.length > 1;
+
+  /**
    * Checks if provided PredictionOptions are valid
    * @param {PredictionOptions} options PredictionOptions to validate
    * @param {string?} slug (Optional) Name of slug to include in logger output
    * @returns {boolean} `true` if `options` are valid PredictionOptions
    */
-  private isPredictionOptionsValid = (options: PredictionOptions, slug?: string): boolean => {
-    const { logger } = this.modules;
-    const slugString = slug ? ` with slug ${slug}` : "";
-
-    if (!options) {
-      logger.error(`No PredictionOptions found${ slugString }`);
-      return false;
-    }
-
-    if (!options.titleChoices.length) {
-      logger.error(`No titleChoices found on PredictionOptions${ slugString }`);
-      return false;
-    }
-
-    if (options.outcomeChoices.length < 2) {
-      logger.error(`Prediction${ slugString } does not have enough outcomes`);
-      return false;
-    }
-
-    return true;
-  }
+  private isPredictionOptionsValid = (options: PredictionOptions): boolean =>
+    options
+    && options.titleChoices.length
+    && options.outcomeChoices.filter(o =>
+      o.length
+    ).length > 1
 }
 
 export const predictions: PredictionLibrary = {
