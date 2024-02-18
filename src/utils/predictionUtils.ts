@@ -62,7 +62,7 @@ export default class PredictionUtils {
     const options = await this.db.get<PredictionOptions>(`/${slug}`);
 
     return  {
-        status: options ? 200 : 409,
+        status: options ? 200 : 404,
         message: `Could not get prediction options for slug "${slug}"`,
         options
       }
@@ -85,12 +85,12 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {Prediction} Randomized Prediction object
    */
-  public async getRandomPrediction(slug: string): Promise<PredictionResponse | null> {
+  public async getRandomPrediction(slug: string): Promise<PredictionResponse | undefined> {
     if (!this.isDbReady(`getRandomPrediction(${slug})`))
       return Respond503ServiceUnavailable("Prediction Db not ready") as PredictionResponse;
 
     const response: PredictionOptionsResponse = await this.getPredictionOptions(slug);
-    if (response.status != 200 || !response.options || !this.isPredictionOptionsValid(response.options)) return null;
+    if (response.status != 200 || !response.options || !this.isPredictionOptionsValid(response.options)) return undefined;
 
     const { titleChoices, outcomeChoices } = response.options;
     const prediction: Prediction = {

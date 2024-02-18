@@ -12,6 +12,7 @@
     "downlevelIteration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "strictNullChecks": true,
     "paths": {
       "@/*": ["./src/*"],
       "@t/*": ["./types/*"],
