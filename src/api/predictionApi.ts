@@ -39,11 +39,11 @@ export default class PredictionApi {
    */
   private async registerEndpoints(): Promise<boolean> {
     const { modules, prefix, base } = this;
-    const { httpServer } = modules;
+    const { httpServer, logger } = modules;
 
     let response = true;
 
-    modules.logger.info("Registering Prediction Endpoints....");
+    logger.info("Registering Prediction Endpoints....");
     response &&= httpServer.registerCustomRoute(prefix, base, "GET", this.getPredictionHandler);
     response &&= httpServer.registerCustomRoute(prefix, base, "POST", this.postPredictionHandler);
     response &&= httpServer.registerCustomRoute(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
@@ -57,14 +57,14 @@ export default class PredictionApi {
    */
   public async unregisterEndpoints(): Promise<boolean> {
     const { modules, prefix, base } = this;
-    const unreg = modules.httpServer.unregisterCustomRoute;
+    const { httpServer, logger } = modules;
 
     let response = true;
 
-    modules.logger.info("Unregistering Prediction Endpoints...");
-    response &&= unreg(prefix, base, "GET");
-    response &&= unreg(prefix, base, "POST");
-    response &&= unreg(prefix, `${base}/titles`, "GET");
+    logger.info("Unregistering Prediction Endpoints...");
+    response &&= httpServer.unregisterCustomRoute(prefix, base, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, base, "POST");
+    response &&= httpServer.unregisterCustomRoute(prefix, `${base}/titles`, "GET");
 
     return response;
   }
@@ -72,7 +72,7 @@ export default class PredictionApi {
   /**
    * GET : /oceanity/predictions
    */
-  private getPredictionHandler = async (req: Request, res: Response) => {
+  private getPredictionHandler = async (req: Request, res: Response): Promise<void> => {
     const { modules, predictions } = this;
     const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
 
@@ -81,12 +81,12 @@ export default class PredictionApi {
 
     if (!response) {
       modules.logger.info(`Could not get random prediction from slug ${slug}`);
-      return false;
+      return;
     }
 
     if (response.status != 200) {
       modules.logger.error(`Error ${response.status}: ${response.message}`);
-      return false;
+      return;
     }
 
     modules.logger.info(`Pulled prediction ${response.prediction.title}`);
