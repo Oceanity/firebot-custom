@@ -54,16 +54,18 @@ export default class PredictionUtils {
   public async getPredictionOptions(slug: string): Promise<PredictionOptionsResponse> {
     if (!this.isDbReady(`getPredictionOptions(${slug})`)) return null;
 
-    const defaults: PredictionOptions = {
-      titleChoices: [],
-      outcomeChoices: [],
-    };
-    const options = await this.db.get<PredictionOptions>(`/${slug}`, defaults);
+    const options = await this.db.get<PredictionOptions>(`/${slug}`);
 
-    return {
-      status: options ? 200 : 404,
-      options
-    }
+    return options
+      ? {
+        status: 200,
+        options
+      }
+      : {
+        status: 409,
+        message: `Could not get prediction options for slug "${slug}"`,
+        options: null
+      }
   }
 
   /**
