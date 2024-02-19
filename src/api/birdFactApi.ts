@@ -21,6 +21,7 @@ const possibleTopics: string[] = [
   "talons",
   "wings",
   "wingspan",
+  "migratory habits",
   "egg laying habits",
   "relationship to humans",
   "special abilities",
@@ -42,6 +43,9 @@ export default class BirdFactApi {
   private readonly modules: ScriptModules;
   private readonly prefix: string;
   private readonly base: string;
+  private readonly dbBase: string;
+
+  private factCount: number;
 
   constructor(modules: ScriptModules) {
     this.nuthatchUtils = new NuthatchUtils(modules);
@@ -51,11 +55,16 @@ export default class BirdFactApi {
 
     this.prefix = "oceanity";
     this.base = "/birdFacts";
+    this.dbBase = "/facts";
+
+    this.factCount = 0;
   }
 
   public setup = async () => {
     this.modules.logger.info("Setting up BirdFactApi...");
     await this.db.setup();
+    this.factCount = await this.db.count(this.dbBase);
+    this.modules.logger.info(this.factCount.toString());
     await this.nuthatchUtils.setup();
     await this.registerEndpoints();
   }
@@ -70,8 +79,8 @@ export default class BirdFactApi {
 
   private putNewBirdFactHandler = async (req: Request, res: Response) => {
     const birdResponse = await this.nuthatchUtils.getRandomBird();
-    const birbFacts = await this.db.get<BirbFact[]>("/facts", []) ?? [];
     const topic = getRandomItem<string>(possibleTopics);
+    const count = await this.db.count(this.dbBase);
 
     const chatResponse = await this.openAiUtils.chatCompletion([
       { role: "system", content: "You are a female ornithologist who doesn't actually know as much about birds as you think, but will confidently state incorrect facts about them." },
@@ -79,7 +88,7 @@ export default class BirdFactApi {
     ]);
 
     const newFact: BirbFact = {
-      id: birbFacts.length + 1,
+      id: count + 1,
       bird: {
         name: birdResponse.name,
         id: birdResponse.id,
@@ -90,9 +99,8 @@ export default class BirdFactApi {
       topic,
       message: chatResponse.choices.pop()?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
     }
-    birbFacts.push(newFact);
 
-    this.db.push<BirbFact[]>("/facts", birbFacts);
+    this.db.push<BirbFact[]>(this.dbBase, [newFact], false);
 
     res.send(newFact);
   }

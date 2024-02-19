@@ -73,6 +73,14 @@ export default class DbUtils {
   }
 
   /**
+   * Get count of array items
+   * @param {string} path Path of array to count in db
+   * @returns {number} Number of items in array, or -1 on error
+   */
+  public count = async (path: string): Promise<number> =>
+      (await this.db?.count(path)) ?? -1;
+
+  /**
    * Check if DbUtils has run `setup()` and is able to handle commands
    * @returns {boolean} `true` if DbUtils has run `setup()` and is able to handle commands
    */
