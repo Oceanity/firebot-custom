@@ -43,9 +43,7 @@ export default class BirdFactApi {
   private readonly modules: ScriptModules;
   private readonly prefix: string;
   private readonly base: string;
-  private readonly dbBase: string;
-
-  private factCount: number;
+  private readonly dbFactPath: string;
 
   constructor(modules: ScriptModules) {
     this.nuthatchUtils = new NuthatchUtils(modules);
@@ -55,16 +53,12 @@ export default class BirdFactApi {
 
     this.prefix = "oceanity";
     this.base = "/birdFacts";
-    this.dbBase = "/facts";
-
-    this.factCount = 0;
+    this.dbFactPath = "/facts";
   }
 
   public setup = async () => {
     this.modules.logger.info("Setting up BirdFactApi...");
     await this.db.setup();
-    this.factCount = await this.db.count(this.dbBase);
-    this.modules.logger.info(this.factCount.toString());
     await this.nuthatchUtils.setup();
     await this.registerEndpoints();
   }
@@ -80,7 +74,7 @@ export default class BirdFactApi {
   private putNewBirdFactHandler = async (req: Request, res: Response) => {
     const birdResponse = await this.nuthatchUtils.getRandomBird();
     const topic = getRandomItem<string>(possibleTopics);
-    const count = await this.db.count(this.dbBase);
+    const count = await this.db.count(this.dbFactPath);
 
     const chatResponse = await this.openAiUtils.chatCompletion([
       { role: "system", content: "You are a female ornithologist who doesn't actually know as much about birds as you think, but will confidently state incorrect facts about them." },
@@ -100,7 +94,7 @@ export default class BirdFactApi {
       message: chatResponse.choices.pop()?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
     }
 
-    this.db.push<BirbFact[]>(this.dbBase, [newFact], false);
+    this.db.push<BirbFact[]>(this.dbFactPath, [newFact], false);
 
     res.send(newFact);
   }
@@ -114,8 +108,4 @@ export default class BirdFactApi {
 
     res.send(fact);
   }
-
-  /*private getBirdFactHanlder = async (req: Request, res: Response) => {
-    await fetch()
-  }*/
 }
