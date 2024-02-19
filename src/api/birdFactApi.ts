@@ -6,6 +6,7 @@ import OpenApiUtils from "@/utils/openAiUtils";
 import DbUtils from "@/utils/dbUtils";
 import { BirbFact } from "@t/birbFacts";
 import { getRandomItem } from "@/utils/array";
+import { getRequestDataFromUri } from "@/utils/requestUtils";
 dotenv.config({ path: __dirname + '/.env' });
 
 // TODO: Move these to Db backend with hooks to add/remove
@@ -63,11 +64,11 @@ export default class BirdFactApi {
     const { modules, prefix, base } = this;
     const { httpServer } = modules;
 
-    httpServer.registerCustomRoute(prefix, base, "PUT", this.getNewBirdFactHandler);
+    httpServer.registerCustomRoute(prefix, base, "PUT", this.putNewBirdFactHandler);
     httpServer.registerCustomRoute(prefix, base, "GET", this.getBirdFactHandler);
   }
 
-  private getNewBirdFactHandler = async (req: Request, res: Response) => {
+  private putNewBirdFactHandler = async (req: Request, res: Response) => {
     const birdResponse = await this.nuthatchUtils.getRandomBird();
     const birbFacts = await this.db.get<BirbFact[]>("/facts", []) ?? [];
     const topic = getRandomItem<string>(possibleTopics);
@@ -97,12 +98,11 @@ export default class BirdFactApi {
   }
 
   private getBirdFactHandler = async (req: Request, res: Response) => {
-    if (req.body.id) {
-      this.modules.logger.info(req.body.id);
-    }
+    const { id } = getRequestDataFromUri(req.url).params;
+    const index = id ? parseInt(id) - 1 : -1;
 
     const facts = await this.db.get<BirbFact[]>("/facts") ?? [];
-    const fact = getRandomItem<BirbFact>(facts);
+    const fact = index != -1 && index < facts.length ? facts[index] : getRandomItem<BirbFact>(facts);
 
     res.send(fact);
   }

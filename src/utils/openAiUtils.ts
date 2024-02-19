@@ -25,18 +25,11 @@ export default class OpenApiUtils {
   }
 
   public chatCompletion = async (messages: ChatCompletionMessageParam[]) => {
-    const newBody = this.baseBody;
-    newBody.messages = [...newBody.messages, ...messages];
-
-    this.modules.logger.info(`Creating openAi completion with body ${JSON.stringify(newBody)}`);
-
     const chatCompletion = await this.openAi.chat.completions.create({
       model: "gpt-3.5-turbo",
       temperature: 1.4,
       messages
     });
-
-    this.modules.logger.info(JSON.stringify(chatCompletion));
 
     return chatCompletion;
   }
