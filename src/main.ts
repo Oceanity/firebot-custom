@@ -1,6 +1,7 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
 import PredictionApi from "@api/predictionApi";
+import BirdFactApi from "./api/birdFactApi";
 
 type Params = {
   message: string;
@@ -33,6 +34,10 @@ const script: Firebot.CustomScript<Params> = {
     // Predictions
     const predictionApi = new PredictionApi("./db/predictions.db", modules);
     await predictionApi.setup();
+
+    // Bird Facts
+    const birdFactApi = new BirdFactApi(modules);
+    await birdFactApi.setup();
   },
 };
 
