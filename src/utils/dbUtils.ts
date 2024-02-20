@@ -2,7 +2,8 @@ import { ensureDir } from "fs-extra";
 import { join, dirname } from "path";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { FindCallback, JsonDB } from "node-json-db";
-import { getRandomItem } from "./array";
+import * as _ from "lodash";
+import { getRandomInteger } from "./numbers";
 
 export default class DbUtils {
   private readonly path: string;
@@ -55,8 +56,14 @@ export default class DbUtils {
     }
   }
 
-  public getRandom = async <T>(path: string): Promise<T | undefined> =>
-    getRandomItem<T>(await this.db?.getData(path));
+  public getFirst = async <T>(path:string): Promise<T | undefined> =>
+    _.first(await this.db?.getData(path));
+
+  public getLast = async <T>(path:string): Promise<T | undefined> =>
+    _.last(await this.db?.getData(path));
+
+  public getRandom = async <T>(path: string, defaults?: T[]): Promise<T | undefined> =>
+    _.nth((await this.get<T[]>(path, defaults)), getRandomInteger(await this.count(path)));
 
   /**
    *  Puts data into loaded db at given path
@@ -65,24 +72,51 @@ export default class DbUtils {
    * @param {boolean} override If `true`, will overwrite data in the db
    * @returns {boolean} `true` if operation completed successfully
    */
-  public async push<T>(path: string, data: T, override?: boolean): Promise<boolean> {
-    const { logger } = this.modules;
+  public push = async <T>(path: string, data: T, override: boolean = false, allowDuplicates: boolean = false): Promise<boolean> => {
     try {
+      if (!allowDuplicates) {
+        const find = await this.db?.find<T>(path, d => d == data);
+        this.modules.logger.info(typeof find);
+        if (find) throw new Error(`Item already exists in table ${path} in db ${this.path}`);
+      }
       this.db?.push(path, data, override);
       return true;
     } catch (err) {
-      logger.error(`Failed to push "${typeof data}" to "${path}" in "${this.path}"`);
+      this.modules.logger.error(err as string);
       return false;
     }
   }
 
-  public async filter(path: string, findCallback: FindCallback): Promise<boolean> {
-    const { logger } = this.modules;
+  public filter = async <T>(path: string, findCallback: FindCallback): Promise<T[]> => {
     try {
-      await this.db?.filter(path, findCallback);
+      return await this.db?.filter<T>(path, findCallback) ?? [];
+    } catch (err) {
+      this.modules.logger.error(`Failed to filter "${path}" in "${this.path}"`);
+      return [];
+    }
+  }
+
+  public delete = async (path: string, findCallback: FindCallback): Promise<boolean> => {
+    try {
+      const oldCount = await this.count(path);
+      const filterResponse = await this.db?.filter(path, findCallback);
+      await this.db?.push(path, filterResponse, true);
+      return filterResponse !== undefined && oldCount === await this.count(path);
+    } catch (err) {
+      this.modules.logger.error(`Failed to delete "${path}" in "${this.path}"`);
+      return false;
+    }
+  }
+
+  public delete2 = async <T>(path: string, data: T): Promise<boolean> => {
+    try {
+      const oldCount = await this.count(path);
+      const filtered = await this.filter(path, d => d !== data);
+      if (oldCount == filtered.length) throw new Error("Could not find item to delete");
+      await this.push(path, filtered, true);
       return true;
     } catch (err) {
-      logger.error(`Failed to filter "${path}" in "${this.path}"`);
+      this.modules.logger.error(err as string);
       return false;
     }
   }
