@@ -23,7 +23,7 @@ export default class PredictionUtils {
    * @param {ScriptModules} modules ScriptModules reference
    */
   constructor(path: string, modules: ScriptModules) {
-    this.db = new DbUtils(path, modules);
+    this.db = new DbUtils(modules, path);
     this.modules = modules;
   }
 

@@ -3,10 +3,10 @@ import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import * as dotenv from "dotenv";
 import OpenApiUtils from "@/utils/openAiUtils";
-import DbUtils from "@/utils/dbUtils";
-import { BirbFact } from "@t/birbFacts";
-import { getRandomItem } from "@/utils/array";
+import { CreateLoadingMessageRequest } from "@t/birdFacts";
 import { getRequestDataFromUri } from "@/utils/requestUtils";
+import BirdFactUtils from "@/utils/birdFactUtils";
+import { getRandomItem } from "@/utils/array";
 dotenv.config({ path: __dirname + '/.env' });
 
 // TODO: Move these to Db backend with hooks to add/remove
@@ -18,9 +18,11 @@ const possibleTopics: string[] = [
   "bird call",
   "natural habitat",
   "beak",
+  "feet",
   "talons",
   "wings",
   "wingspan",
+  "flying speed",
   "migratory habits",
   "egg laying habits",
   "relationship to humans",
@@ -37,18 +39,20 @@ const possibleTopics: string[] = [
 ]
 
 export default class BirdFactApi {
+  private readonly birdFactUtils: BirdFactUtils;
   private readonly nuthatchUtils: NuthatchUtils;
   private readonly openAiUtils: OpenApiUtils;
-  private readonly db: DbUtils;
+  //private readonly db: DbUtils;
   private readonly modules: ScriptModules;
   private readonly prefix: string;
   private readonly base: string;
   private readonly dbFactPath: string;
 
   constructor(modules: ScriptModules) {
+    this.birdFactUtils = new BirdFactUtils(modules);
     this.nuthatchUtils = new NuthatchUtils(modules);
     this.openAiUtils = new OpenApiUtils(modules);
-    this.db = new DbUtils("./db/birbFacts.db", modules);
+    //this.db = new DbUtils(modules, "./db/birbFacts.db");
     this.modules = modules;
 
     this.prefix = "oceanity";
@@ -58,7 +62,8 @@ export default class BirdFactApi {
 
   public setup = async () => {
     this.modules.logger.info("Setting up BirdFactApi...");
-    await this.db.setup();
+    await this.birdFactUtils.setup();
+    //await this.db.setup();
     await this.nuthatchUtils.setup();
     await this.registerEndpoints();
   }
@@ -69,43 +74,34 @@ export default class BirdFactApi {
 
     httpServer.registerCustomRoute(prefix, base, "PUT", this.putNewBirdFactHandler);
     httpServer.registerCustomRoute(prefix, base, "GET", this.getBirdFactHandler);
+
+    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "PUT", this.putNewLoadingMessageHandler);
+    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "GET", this.getLoadingMessageHandler);
   }
 
   private putNewBirdFactHandler = async (req: Request, res: Response) => {
-    const birdResponse = await this.nuthatchUtils.getRandomBird();
+    const bird = await this.nuthatchUtils.getRandomBird();
     const topic = getRandomItem<string>(possibleTopics);
-    const count = await this.db.count(this.dbFactPath);
-
-    const chatResponse = await this.openAiUtils.chatCompletion([
-      { role: "system", content: "You are a female ornithologist who doesn't actually know as much about birds as you think, but will confidently state incorrect facts about them." },
-      { role: "user", content: `Can you give me a made up and outlandish fact about the ${birdResponse.name}'s ${topic}. Limit your response to a few sentences in a single line of text that sticks to the facts and doesn't include any unnecessary commentary responding to the question asked like starting with "Sure", "Certainly", "Did you know that" or "Of course"` }
-    ]);
-
-    const newFact: BirbFact = {
-      id: count + 1,
-      bird: {
-        name: birdResponse.name,
-        id: birdResponse.id,
-        sciName: birdResponse.sciName,
-        family: birdResponse.family,
-        order: birdResponse.order
-      },
-      topic,
-      message: chatResponse.choices.pop()?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
-    }
-
-    this.db.push<BirbFact[]>(this.dbFactPath, [newFact], false);
-
+    const newFact = await this.birdFactUtils.putBirdFact(this.openAiUtils, bird, topic);
     res.send(newFact);
   }
 
   private getBirdFactHandler = async (req: Request, res: Response) => {
     const { id } = getRequestDataFromUri(req.url).params;
-    const index = id ? parseInt(id) - 1 : -1;
-
-    const facts = await this.db.get<BirbFact[]>("/facts") ?? [];
-    const fact = index != -1 && index < facts.length ? facts[index] : getRandomItem<BirbFact>(facts);
-
+    const fact = await this.birdFactUtils.getBirdFact(parseInt(id));
     res.send(fact);
+  }
+
+  private getLoadingMessageHandler = async (req: Request, res: Response): Promise<string> => {
+    const response = await this.birdFactUtils.getRandomLoadingMessage();
+    res.send(response);
+    return response;
+  }
+
+  private putNewLoadingMessageHandler = async (req: Request, res: Response): Promise<boolean> => {
+    const { message } = req.body as CreateLoadingMessageRequest;
+    const response = await this.birdFactUtils.pushRandomLoadingMessage(message);
+    res.send(response);
+    return response;
   }
 }

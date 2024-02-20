@@ -1,7 +1,8 @@
 import { ensureDir } from "fs-extra";
 import { join, dirname } from "path";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
-import { JsonDB } from "node-json-db";
+import { FindCallback, JsonDB } from "node-json-db";
+import { getRandomItem } from "./array";
 
 export default class DbUtils {
   private readonly path: string;
@@ -16,7 +17,7 @@ export default class DbUtils {
    * @param {string} path The relative path to the created .db file
    * @param {ScriptModules} modules ScriptModules reference for logging
    */
-  constructor(path: string = "./db/database.db", modules: ScriptModules) {
+  constructor(modules: ScriptModules, path: string = "./db/database.db") {
     this.modules = modules;
     this.path = join(__dirname, path);
     this.dir = dirname(this.path);
@@ -54,6 +55,9 @@ export default class DbUtils {
     }
   }
 
+  public getRandom = async <T>(path: string): Promise<T | undefined> =>
+    getRandomItem<T>(await this.db?.getData(path));
+
   /**
    *  Puts data into loaded db at given path
    * @param {string} path Path of data to pull from db
@@ -72,6 +76,17 @@ export default class DbUtils {
     }
   }
 
+  public async filter(path: string, findCallback: FindCallback): Promise<boolean> {
+    const { logger } = this.modules;
+    try {
+      await this.db?.filter(path, findCallback);
+      return true;
+    } catch (err) {
+      logger.error(`Failed to filter "${path}" in "${this.path}"`);
+      return false;
+    }
+  }
+
   /**
    * Get count of array items
    * @param {string} path Path of array to count in db
@@ -85,4 +100,8 @@ export default class DbUtils {
    * @returns {boolean} `true` if DbUtils has run `setup()` and is able to handle commands
    */
   public isReady = (): boolean => this.ready;
+
+  public isInBounds = async (path: string, index?: number): Promise<boolean> =>
+    index != undefined
+    && await this.count(path) > index;
 }

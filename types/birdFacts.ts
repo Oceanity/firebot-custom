@@ -1,4 +1,4 @@
-export type BirbFact = {
+export type BirdFact = {
   id: number,
   bird: Bird,
   message: string,
@@ -11,4 +11,8 @@ export type Bird = {
   sciName: string,
   family: string,
   order: string,
+}
+
+export type CreateLoadingMessageRequest = {
+  message: string;
 }
