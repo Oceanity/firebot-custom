@@ -96,24 +96,12 @@ export default class DbUtils {
     }
   }
 
-  public delete = async (path: string, findCallback: FindCallback): Promise<boolean> => {
+  public delete = async <T>(path: string, data: T): Promise<boolean> => {
     try {
-      const oldCount = await this.count(path);
-      const filterResponse = await this.db?.filter(path, findCallback);
-      await this.db?.push(path, filterResponse, true);
-      return filterResponse !== undefined && oldCount === await this.count(path);
-    } catch (err) {
-      this.modules.logger.error(`Failed to delete "${path}" in "${this.path}"`);
-      return false;
-    }
-  }
-
-  public delete2 = async <T>(path: string, data: T): Promise<boolean> => {
-    try {
-      const oldCount = await this.count(path);
-      const filtered = await this.filter(path, d => d !== data);
-      if (oldCount == filtered.length) throw new Error("Could not find item to delete");
-      await this.push(path, filtered, true);
+      const count = await this.db?.count(path);
+      const filtered = await this.db?.filter<T>(path, d => d !== data);
+      if (!filtered || count == filtered.length) throw "Could not find item to delete";
+      await this.db?.push(path, filtered, true);
       return true;
     } catch (err) {
       this.modules.logger.error(err as string);
