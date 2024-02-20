@@ -1,6 +1,5 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import DbUtils from "./dbUtils";
-import { getRandomItem } from "./array";
 import { Bird, BirdFact } from "@t/birdFacts";
 import OpenApiUtils from "./openAiUtils";
 
@@ -10,6 +9,7 @@ export default class BirdFactUtils {
 
   private readonly factPath: string;
   private readonly loadingMessagePath: string;
+  private readonly topicsPath: string
 
   constructor(modules: ScriptModules, path: string = "./db/birbFacts.db") {
     modules.logger.info(path);
@@ -18,6 +18,7 @@ export default class BirdFactUtils {
 
     this.factPath = "/facts";
     this.loadingMessagePath = "/loadingMessages";
+    this.topicsPath = "/topics";
   }
 
   public setup = async (): Promise<void> => {
@@ -51,12 +52,38 @@ export default class BirdFactUtils {
   public getBirdFact = async (id?: number): Promise<BirdFact | undefined> =>
     id && await this.db.isInBounds(this.factPath, id - 1) ? (await this.db.get<BirdFact[]>(this.factPath) ?? [])[id - 1] : this.db.getRandom<BirdFact>(this.factPath);
 
+  //#region Loading Message Functions
+  public pushLoadingMessage = async (message: string): Promise<boolean> =>
+    await this.db.push(this.loadingMessagePath, [message]);
+
+  public getAllLoadingMessages = async (): Promise<string[]> =>
+    await this.db.get<string[]>(this.loadingMessagePath) ?? [];
+
   public getRandomLoadingMessage = async (): Promise<string> =>
-    getRandomItem<string>(await this.db.get<string[]>(this.loadingMessagePath) ?? []) ?? "Generating new birb fact...";
+    await this.db.getRandom<string>(this.loadingMessagePath) ?? "Generating new birb fact...";
 
-  public pushRandomLoadingMessage = async (message: string): Promise<boolean> =>
-    await this.db.push(this.loadingMessagePath, [message], false);
+  public updateLoadingMessage = async (oldMessage: string, newMessage: string): Promise<boolean> => {
+    const oldCount = await this.db.count(this.loadingMessagePath);
+    const response = await this.db.filter(this.loadingMessagePath, m => m === oldMessage ? newMessage : m);
+    if (!response || oldCount == await this.db.count(this.loadingMessagePath)) return false;
+    return await this.db.push<string>(this.loadingMessagePath, newMessage);
+  }
 
-  public deleteRandomLoadingMessage = async (message: string): Promise<boolean> =>
-    await this.db.filter(this.loadingMessagePath, m => m !== message);
+  public deleteLoadingMessage = async (message: string): Promise<boolean> =>
+    await this.db.delete(this.loadingMessagePath, l => l === message);
+  //#endregion
+
+  //#region Topic Functions
+  public pushTopic = async (topic: string): Promise<boolean> =>
+    await this.db.push(this.topicsPath, [topic]);
+
+  public getAllTopics = async (): Promise<string[]> =>
+    await this.db.get<string[]>(this.topicsPath) ?? [];
+
+  public getRandomTopic = async (): Promise<string> =>
+    await this.db.getRandom<string>(this.topicsPath, []) ?? "most interesting attributes";
+
+  public deleteTopic = async (topic: string): Promise<boolean> =>
+    await this.db.delete2<string>(this.topicsPath, topic);
+  //#endregion
 }
