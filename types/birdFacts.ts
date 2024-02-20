@@ -16,3 +16,22 @@ export type Bird = {
 export type CreateLoadingMessageRequest = {
   message: string;
 }
+
+export type UpdateLoadingMessageRequest = {
+  oldMessage: string;
+  newMessage: string;
+}
+
+export type DeleteLoadingMessageRequest = CreateLoadingMessageRequest;
+
+
+export type CreateTopicRequest = {
+  topic: string;
+}
+
+export type UpdateTopicRequest = {
+  oldTopic: string;
+  newTopic: string;
+}
+
+export type DeleteTopicRequest = CreateTopicRequest;
