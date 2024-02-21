@@ -4,6 +4,7 @@ import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { FindCallback, JsonDB } from "node-json-db";
 import * as _ from "lodash";
 import { getRandomInteger } from "./numbers";
+import Fuse, { IFuseOptions } from "fuse.js";
 
 export default class DbUtils {
   private readonly path: string;
@@ -76,7 +77,6 @@ export default class DbUtils {
     try {
       if (!allowDuplicates) {
         const find = await this.db?.find<T>(path, d => d == data);
-        this.modules.logger.info(typeof find);
         if (find) throw new Error(`Item already exists in table ${path} in db ${this.path}`);
       }
       this.db?.push(path, data, override);
@@ -96,16 +96,17 @@ export default class DbUtils {
     }
   }
 
-  public delete = async <T>(path: string, data: T): Promise<boolean> => {
+  public delete = async <T>(path: string, search: string, fuseOptions?: IFuseOptions<T>): Promise<T | undefined> => {
     try {
-      const count = await this.db?.count(path);
-      const filtered = await this.db?.filter<T>(path, d => d !== data);
-      if (!filtered || count == filtered.length) throw "Could not find item to delete";
+      const fuse = new Fuse(await this.db?.getData(path), fuseOptions);
+      const results = fuse.search(search)
+      if (!results) throw "Could not find item to delete";
+      const filtered = this.db?.filter(path, d => d !== results[0].item);
       await this.db?.push(path, filtered, true);
-      return true;
+      return results[0].item;
     } catch (err) {
       this.modules.logger.error(err as string);
-      return false;
+      return undefined;
     }
   }
 

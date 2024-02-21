@@ -69,8 +69,8 @@ export default class BirdFactUtils {
     return await this.db.push<string>(this.loadingMessagePath, newMessage);
   }
 
-  public deleteLoadingMessage = async (message: string): Promise<boolean> =>
-    await this.db.delete(this.loadingMessagePath, message);
+  public deleteLoadingMessage = async (message: string): Promise<string | undefined> =>
+    await this.db.delete<string>(this.loadingMessagePath, message);
   //#endregion
 
   //#region Topic Functions
@@ -83,7 +83,7 @@ export default class BirdFactUtils {
   public getRandomTopic = async (): Promise<string> =>
     await this.db.getRandom<string>(this.topicsPath, []) ?? "most interesting attributes";
 
-  public deleteTopic = async (topic: string): Promise<boolean> =>
+  public deleteTopic = async (topic: string): Promise<string | undefined> =>
     await this.db.delete<string>(this.topicsPath, topic);
   //#endregion
 }

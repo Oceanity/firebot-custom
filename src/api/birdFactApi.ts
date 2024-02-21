@@ -52,13 +52,13 @@ export default class BirdFactApi {
     httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "GET", this.getRandomLoadingMessageHandler);
     httpServer.registerCustomRoute(prefix, `${base}/loadingMessages/all`, "GET", this.getAllLoadingMessagesHandler);
     httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "PATCH", this.updateLoadingMessageHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "DELETE", this.deleteLoadingMessageHandler);
+    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages/delete`, "POST", this.deleteLoadingMessageHandler);
 
     // Topic Endpoints
     httpServer.registerCustomRoute(prefix, `${base}/topics`, "PUT", this.putTopicHandler);
     httpServer.registerCustomRoute(prefix, `${base}/topics`, "GET", this.getRandomTopicHandler);
     httpServer.registerCustomRoute(prefix, `${base}/topics/all`, "GET", this.getAllTopicsHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/topics`, "DELETE", this.deleteTopicHandler);
+    httpServer.registerCustomRoute(prefix, `${base}/topics/delete`, "POST", this.deleteTopicHandler);
   }
 
   //#region Bird Fact Handlers
@@ -104,10 +104,13 @@ export default class BirdFactApi {
   }
 
   private deleteLoadingMessageHandler = async (req: Request, res: Response): Promise<boolean> => {
-    const { message } = req.body as DeleteLoadingMessageRequest;
-    const response = await this.birdFactUtils.deleteLoadingMessage(message);
-    res.send(response);
-    return response;
+    try {
+      const { message } = req.body as DeleteLoadingMessageRequest;
+      res.send(await this.birdFactUtils.deleteLoadingMessage(message));
+      return true;
+    } catch(err) {
+      return endpointErrorHandler(this.modules.logger, err, res);
+    }
   }
   //#endregion
 
@@ -151,5 +154,5 @@ export default class BirdFactApi {
       return endpointErrorHandler(this.modules.logger, err, res);
     }
   }
-  //#endregions
+  //#endregion
 }
