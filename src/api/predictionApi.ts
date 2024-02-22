@@ -4,12 +4,12 @@ import { getRequestDataFromUri } from "@u/requestUtils";
 import PredictionUtils from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
 import { resolve } from "path";
+import Api from "@api/apiCommon";
 
 export default class PredictionApi {
   private predictions: PredictionUtils;
   private modules: ScriptModules;
 
-  private readonly prefix: string = "oceanity";
   private readonly base: string = "/predictions";
 
   /**
@@ -38,15 +38,15 @@ export default class PredictionApi {
    * @returns {boolean} `true` if operation was successful
    */
   private async registerEndpoints(): Promise<boolean> {
-    const { modules, prefix, base } = this;
+    const { modules, base } = this;
     const { httpServer, logger } = modules;
 
     let response = true;
 
     logger.info("Registering Prediction Endpoints....");
-    response &&= httpServer.registerCustomRoute(prefix, base, "GET", this.getPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, base, "POST", this.postPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
+    response &&= httpServer.registerCustomRoute(Api.prefix, base, "GET", this.getPredictionHandler);
+    response &&= httpServer.registerCustomRoute(Api.prefix, base, "POST", this.postPredictionHandler);
+    response &&= httpServer.registerCustomRoute(Api.prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
 
     return response;
   }
@@ -56,15 +56,15 @@ export default class PredictionApi {
    * @returns {boolean} `true` if operation was successful
    */
   public async unregisterEndpoints(): Promise<boolean> {
-    const { modules, prefix, base } = this;
+    const { modules, base } = this;
     const { httpServer, logger } = modules;
 
     let response = true;
 
     logger.info("Unregistering Prediction Endpoints...");
-    response &&= httpServer.unregisterCustomRoute(prefix, base, "GET");
-    response &&= httpServer.unregisterCustomRoute(prefix, base, "POST");
-    response &&= httpServer.unregisterCustomRoute(prefix, `${base}/titles`, "GET");
+    response &&= httpServer.unregisterCustomRoute(Api.prefix, base, "GET");
+    response &&= httpServer.unregisterCustomRoute(Api.prefix, base, "POST");
+    response &&= httpServer.unregisterCustomRoute(Api.prefix, `${base}/titles`, "GET");
 
     return response;
   }

@@ -1,4 +1,5 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
+import { Bird } from "@t/birdFacts";
 import { getRandomInteger } from "@u/numbers"
 import * as dotenv from "dotenv";
 dotenv.config({ path: `${__dirname}/.env` });
@@ -15,7 +16,7 @@ export default class NuthatchUtils {
     this.modules = modules;
     this.headers = new Headers();
     this.headers.set("Content-Type", "application/json");
-    this.headers.set("API-Key", process.env.NUTHATCH_API_KEY ?? "");
+    this.headers.set("API-Key", process.env["NUTHATCH_API_KEY"] ?? "");
   }
 
   public setup = async () : Promise<void> => {
@@ -42,18 +43,21 @@ export default class NuthatchUtils {
     modules.logger.info(`Bird pages: ${this.pages}`);
   }
 
-  public getRandomBird = async() => {
-    const { apiBase, headers, modules } = this;
+  public getRandomBird = async(): Promise<Bird | undefined> => {
+    const { apiBase, headers } = this;
 
-    if (!this.isApiKeySet()) {
-      modules.logger.error("Could not load Nuthatch API Key");
-      return;
-    }
+    if (!this.isApiKeySet()) throw "Could not load Nuthatch API Key";
 
     const response = await fetch(`${apiBase}/birds?page=${getRandomInteger(this.pages)}&pageSize=${this.birdsPerPage}`, { headers });
     const data = await response.json();
 
-    return data.entities[getRandomInteger(data.entities.length)];
+    const bird = data.entities[getRandomInteger(data.entities.length)];
+
+    // Catch [x or y] in scientific name
+    const orMatch = /\[(.+)\s+or\s+(.+)\]/i;
+    bird.sciName = bird.sciName.replace(orMatch, "$1");
+
+    return bird;
   }
 
   private isApiKeySet = (): boolean =>

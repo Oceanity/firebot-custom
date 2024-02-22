@@ -4,6 +4,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const { scriptOutputName } = require("../package.json");
+const { env } = require("yargs");
 
 const getAppDataFolderPath = () => {
   switch (process.platform) {
@@ -54,7 +55,8 @@ const getFirebotScriptsFolderPath = () => {
 
 const main = async () => {
   const firebotScriptsFolderPath = getFirebotScriptsFolderPath();
-  const scriptFileName = `${scriptOutputName}.js`
+  const scriptFileName = `${scriptOutputName}.js`;
+  const envFileName = ".env";
   const outputDir = `${firebotScriptsFolderPath}/${scriptOutputName}/`;
 
   const srcScriptFilePath = path.resolve(`./dist/${scriptFileName}`);
@@ -63,10 +65,17 @@ const main = async () => {
     "index.js"
   );
 
+  const srcEnvFilePath = path.resolve(`./${envFileName}`);
+  const destEnvFilePath = path.join(
+    outputDir,
+    envFileName
+  );
+
   await fs.ensureDir(outputDir);
   await fs.copyFile(srcScriptFilePath, destScriptFilePath);
+  await fs.copyFile(srcEnvFilePath, destEnvFilePath);
 
-  console.log(`Successfully copied ${scriptFileName} to Firebot scripts folder.`);
+  console.log(`Successfully copied ${scriptFileName} and ${envFileName} to Firebot scripts folder.`);
 };
 
 main();

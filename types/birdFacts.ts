@@ -3,6 +3,7 @@ export type BirdFact = {
   bird: Bird,
   message: string,
   topic?: string
+  iNatData?: iNaturalistData
 }
 
 export type Bird = {
@@ -35,3 +36,9 @@ export type UpdateTopicRequest = {
 }
 
 export type DeleteTopicRequest = CreateTopicRequest;
+
+export type iNaturalistData = {
+  id: string,
+  photo_url: string,
+  photo_attribution: string
+}

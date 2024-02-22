@@ -1,11 +1,16 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import DbUtils from "./dbUtils";
-import { Bird, BirdFact } from "@t/birdFacts";
+import { BirdFact } from "@t/birdFacts";
 import OpenApiUtils from "./openAiUtils";
+import NuthatchUtils from "./nuthatchUtils";
+import iNaturalistUtils from "./iNaturalistUtils";
 
 export default class BirdFactUtils {
   private readonly modules: ScriptModules;
   private readonly db: DbUtils;
+  private readonly openAi: OpenApiUtils;
+  private readonly nuthatch: NuthatchUtils;
+  private readonly iNat: iNaturalistUtils;
 
   private readonly factPath: string;
   private readonly loadingMessagePath: string;
@@ -15,6 +20,9 @@ export default class BirdFactUtils {
     modules.logger.info(path);
     this.modules = modules;
     this.db = new DbUtils(modules, path);
+    this.openAi = new OpenApiUtils(modules)
+    this.nuthatch = new NuthatchUtils(modules);
+    this.iNat = new iNaturalistUtils();
 
     this.factPath = "/facts";
     this.loadingMessagePath = "/loadingMessages";
@@ -23,14 +31,28 @@ export default class BirdFactUtils {
 
   public setup = async (): Promise<void> => {
     await this.db.setup();
+    await this.nuthatch.setup();
   }
 
-  public putBirdFact = async (openAi: OpenApiUtils, bird: Bird, topic?: string): Promise<BirdFact> => {
+  public putBirdFact = async (): Promise<BirdFact> => {
+    const { openAi } = this;
+    const topic = await this.getRandomTopic();
+    this.modules.logger.info(topic);
+    const bird = await this.nuthatch.getRandomBird();
+    if (!bird) throw "Could not get Bird from Nuthatch API!";
+    this.modules.logger.info(JSON.stringify(bird));
+
+    const iNatData = await iNaturalistUtils.getBirdInfo(bird.sciName, this.modules);
+    this.modules.logger.info(JSON.stringify(iNatData));
+
     const chatResponse = await openAi.chatCompletion([
       { role: "system", content: "You are a female ornithologist who doesn't actually know as much about birds as you think, but will confidently state incorrect facts about them." },
       { role: "user", content: `Can you give me a made up and outlandish fact about the ${bird.name}'s ${topic ?? "most interesting features"}. Limit your response to a few sentences in a single line of text that sticks to the facts and doesn't include any unnecessary commentary responding to the question asked like starting with "Sure", "Certainly", "Did you know that" or "Of course"` }
     ]);
-    const count = await this.db.count(this.factPath);
+    this.modules.logger.info(JSON.stringify(chatResponse));
+
+    const count = await this.db.count(this.factPath) ?? 0;
+    this.modules.logger.info(`${count}`);
 
     const newFact: BirdFact = {
       id: count + 1,
@@ -41,13 +63,19 @@ export default class BirdFactUtils {
         family: bird.family,
         order: bird.order
       },
+      iNatData,
       topic,
       message: chatResponse.choices.pop()?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
     }
-    this.db.push<BirdFact[]>(this.factPath, [newFact], false);
+    this.modules.logger.info(JSON.stringify(newFact));
 
+    await this.db.push<BirdFact[]>(this.factPath, [newFact], false);
+    this.modules.logger.info("Pushed new Bird Fact");
     return newFact;
   }
+
+  public getAllBirdFacts = async (): Promise<BirdFact[]> =>
+    await this.db.get<BirdFact[]>(this.factPath) ?? [];
 
   public getBirdFact = async (id?: number): Promise<BirdFact | undefined> =>
     id && await this.db.isInBounds(this.factPath, id - 1) ? (await this.db.get<BirdFact[]>(this.factPath) ?? [])[id - 1] : this.db.getRandom<BirdFact>(this.factPath);

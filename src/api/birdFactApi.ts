@@ -2,7 +2,6 @@ import NuthatchUtils from "@/utils/nuthatchUtils";
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import * as dotenv from "dotenv";
-import OpenApiUtils from "@/utils/openAiUtils";
 import {
   CreateLoadingMessageRequest,
   UpdateLoadingMessageRequest,
@@ -12,23 +11,20 @@ import {
 } from "@t/birdFacts";
 import { endpointErrorHandler, getRequestDataFromUri } from "@/utils/requestUtils";
 import BirdFactUtils from "@/utils/birdFactUtils";
+import Api from "./apiCommon";
 dotenv.config({ path: __dirname + '/.env' });
 
 export default class BirdFactApi {
   private readonly birdFactUtils: BirdFactUtils;
   private readonly nuthatchUtils: NuthatchUtils;
-  private readonly openAiUtils: OpenApiUtils;
   private readonly modules: ScriptModules;
-  private readonly prefix: string;
   private readonly base: string;
 
   constructor(modules: ScriptModules) {
     this.birdFactUtils = new BirdFactUtils(modules);
     this.nuthatchUtils = new NuthatchUtils(modules);
-    this.openAiUtils = new OpenApiUtils(modules);
     this.modules = modules;
 
-    this.prefix = "oceanity";
     this.base = "/birdFacts";
   }
 
@@ -40,39 +36,38 @@ export default class BirdFactApi {
   }
 
   private registerEndpoints = async () => {
-    const { modules, prefix, base } = this;
+    const { modules, base } = this;
     const { httpServer } = modules;
 
     // Birb Fact Endpoints
-    httpServer.registerCustomRoute(prefix, base, "PUT", this.putNewBirdFactHandler);
-    httpServer.registerCustomRoute(prefix, base, "GET", this.getBirdFactHandler);
+    httpServer.registerCustomRoute(Api.prefix, base, "PUT", this.putNewBirdFactHandler);
+    httpServer.registerCustomRoute(Api.prefix, base, "GET", this.getBirdFactHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/all`, "GET", this.getAllBirdFactsHandler);
 
     // Loading Message Endpoints
-    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "PUT", this.putLoadingMessageHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "GET", this.getRandomLoadingMessageHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages/all`, "GET", this.getAllLoadingMessagesHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages`, "PATCH", this.updateLoadingMessageHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/loadingMessages/delete`, "POST", this.deleteLoadingMessageHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/loadingMessages`, "PUT", this.putLoadingMessageHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/loadingMessages`, "GET", this.getRandomLoadingMessageHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/loadingMessages/all`, "GET", this.getAllLoadingMessagesHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/loadingMessages`, "PATCH", this.updateLoadingMessageHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/loadingMessages/delete`, "POST", this.deleteLoadingMessageHandler);
 
     // Topic Endpoints
-    httpServer.registerCustomRoute(prefix, `${base}/topics`, "PUT", this.putTopicHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/topics`, "GET", this.getRandomTopicHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/topics/all`, "GET", this.getAllTopicsHandler);
-    httpServer.registerCustomRoute(prefix, `${base}/topics/delete`, "POST", this.deleteTopicHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/topics`, "PUT", this.putTopicHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/topics`, "GET", this.getRandomTopicHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/topics/all`, "GET", this.getAllTopicsHandler);
+    httpServer.registerCustomRoute(Api.prefix, `${base}/topics/delete`, "POST", this.deleteTopicHandler);
   }
 
   //#region Bird Fact Handlers
-  private putNewBirdFactHandler = async (req: Request, res: Response) => {
-    const bird = await this.nuthatchUtils.getRandomBird();
-    const topic = await this.birdFactUtils.getRandomTopic();
-    const newFact = await this.birdFactUtils.putBirdFact(this.openAiUtils, bird, topic);
-    res.send(newFact);
-  }
+  private putNewBirdFactHandler = async (req: Request, res: Response) =>
+    res.send(await this.birdFactUtils.putBirdFact());
+
+  private getAllBirdFactsHandler = async (req: Request, res: Response) =>
+    res.send(await this.birdFactUtils.getAllBirdFacts());
 
   private getBirdFactHandler = async (req: Request, res: Response) => {
     const { id } = getRequestDataFromUri(req.url).params;
-    const fact = await this.birdFactUtils.getBirdFact(parseInt(id));
-    res.send(fact);
+    res.send(await this.birdFactUtils.getBirdFact(parseInt(id)));
   }
   //#endregion
 
