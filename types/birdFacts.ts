@@ -19,11 +19,13 @@ export type CreateLoadingMessageRequest = {
 }
 
 export type UpdateLoadingMessageRequest = {
-  oldMessage: string;
-  newMessage: string;
+  search: string;
+  replace: string;
 }
 
-export type DeleteLoadingMessageRequest = CreateLoadingMessageRequest;
+export type DeleteLoadingMessageRequest = {
+  search: string;
+}
 
 
 export type CreateTopicRequest = {

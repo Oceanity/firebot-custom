@@ -4,43 +4,37 @@ import OpenApiUtils from "./openAiUtils";
 import NuthatchUtils from "./nuthatchUtils";
 import iNaturalistUtils from "./iNaturalistUtils";
 import store from "@u/global";
+import BirdFactTopicUtils from "./birdFactTopicUtils";
 
 export default class BirdFactUtils {
-  private static topicDb: DbUtils;
-
   private readonly db: DbUtils;
+  private readonly topics: BirdFactTopicUtils;
   private readonly openAi: OpenApiUtils;
   private readonly nuthatch: NuthatchUtils;
   private readonly iNat: iNaturalistUtils;
 
-  private readonly factPath: string;
-  private readonly loadingMessagePath: string;
-  private readonly topicsPath: string
+  private readonly path: string;
 
   constructor(path: string = "./db/birbFacts.db") {
-    if (!BirdFactUtils.topicDb) {
-      BirdFactUtils.topicDb = new DbUtils("./db/birbFactTopics.db");
-    }
-
     store.modules.logger.info(path);
     this.db = new DbUtils(path);
+    this.topics = new BirdFactTopicUtils();
     this.openAi = new OpenApiUtils();
     this.nuthatch = new NuthatchUtils();
     this.iNat = new iNaturalistUtils();
 
-    this.factPath = "/facts";
-    this.loadingMessagePath = "/loadingMessages";
-    this.topicsPath = "/topics";
+    this.path = "/facts";
   }
 
   setup = async (): Promise<void> => {
     await this.db.setup();
+    await this.topics.setup();
     await this.nuthatch.setup();
   }
 
   putBirdFact = async (): Promise<BirdFact> => {
     const { openAi } = this;
-    const topic = await this.getRandomTopic();
+    const topic = await this.topics.get();
     const bird = await this.nuthatch.getRandomBird();
 
     if (!bird) throw "Could not get Bird from Nuthatch API!";
@@ -52,7 +46,7 @@ export default class BirdFactUtils {
       { role: "user", content: `Can you give me a made up and outlandish fact about the ${bird.name}'s ${topic ?? "most interesting features"}. Limit your response to a few sentences in a single line of text that sticks to the facts and doesn't include any unnecessary commentary responding to the question asked like starting with "Sure", "Certainly", "Did you know that" or "Of course"` }
     ]);
 
-    const count = await this.db.count(this.factPath) ?? 0;
+    const count = await this.db.count(this.path) ?? 0;
 
     const newFact: BirdFact = {
       id: count + 1,
@@ -69,49 +63,14 @@ export default class BirdFactUtils {
     }
     store.modules.logger.info(JSON.stringify(newFact));
 
-    await this.db.push<BirdFact[]>(this.factPath, [newFact], false);
+    await this.db.push<BirdFact[]>(this.path, [newFact], false);
     store.modules.logger.info("Pushed new Bird Fact");
     return newFact;
   }
 
   getAllBirdFacts = async (): Promise<BirdFact[]> =>
-    await this.db.get<BirdFact[]>(this.factPath) ?? [];
+    await this.db.get<BirdFact[]>(this.path) ?? [];
 
   getBirdFact = async (id?: number): Promise<BirdFact | undefined> =>
-    id && await this.db.isInBounds(this.factPath, id - 1) ? (await this.db.get<BirdFact[]>(this.factPath) ?? [])[id - 1] : this.db.getRandom<BirdFact>(this.factPath);
-
-  //#region Loading Message Functions
-  pushLoadingMessage = async (message: string): Promise<boolean> =>
-    await this.db.push(this.loadingMessagePath, [message]);
-
-  getAllLoadingMessages = async (): Promise<string[]> =>
-    await this.db.get<string[]>(this.loadingMessagePath) ?? [];
-
-  getRandomLoadingMessage = async (): Promise<string> =>
-    await this.db.getRandom<string>(this.loadingMessagePath) ?? "Generating new birb fact...";
-
-  updateLoadingMessage = async (oldMessage: string, newMessage: string): Promise<boolean> => {
-    const oldCount = await this.db.count(this.loadingMessagePath);
-    const response = await this.db.filter(this.loadingMessagePath, m => m === oldMessage ? newMessage : m);
-    if (!response || oldCount == await this.db.count(this.loadingMessagePath)) return false;
-    return await this.db.push<string>(this.loadingMessagePath, newMessage);
-  }
-
-  deleteLoadingMessage = async (message: string): Promise<string | undefined> =>
-    await this.db.delete<string>(this.loadingMessagePath, message);
-  //#endregion
-
-  //#region Topic Functions
-  pushTopic = async (topic: string): Promise<boolean> =>
-    await this.db.push(this.topicsPath, [topic]);
-
-  getAllTopics = async (): Promise<string[]> =>
-    await this.db.get<string[]>(this.topicsPath) ?? [];
-
-  getRandomTopic = async (): Promise<string> =>
-    await this.db.getRandom<string>(this.topicsPath, []) ?? "most interesting attributes";
-
-  deleteTopic = async (topic: string): Promise<string | undefined> =>
-    await this.db.delete<string>(this.topicsPath, topic);
-  //#endregion
+    id && await this.db.isInBounds(this.path, id - 1) ? (await this.db.get<BirdFact[]>(this.path) ?? [])[id - 1] : this.db.getRandom<BirdFact>(this.path);
 }

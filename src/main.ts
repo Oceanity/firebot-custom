@@ -7,6 +7,7 @@ import { resolve } from "path";
 import * as dotenv from "dotenv";
 import store from "@u/global";
 import BirdFactTopicApi from "./api/birdFactTopicApi";
+import BirdFactLoadingMessageApi from "./api/birdFactLoadingMessageApi";
 
 type Params = {
   message: string;
@@ -46,6 +47,7 @@ const script: Firebot.CustomScript<Params> = {
     await new PredictionApi("./db/predictions.db").setup();
     await new BirdFactApi().setup();
     await new BirdFactTopicApi().setup();
+    await new BirdFactLoadingMessageApi().setup();
     await new MastodonApi().setup();
   },
 };

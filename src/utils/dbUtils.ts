@@ -79,7 +79,7 @@ export default class DbUtils {
         const find = await this.db?.find<T>(path, d => d == data);
         if (find) throw new Error(`Item already exists in table ${path} in db ${this.path}`);
       }
-      this.db?.push(path, data, override);
+      this.db?.push(path, [data], override);
       return true;
     } catch (err) {
       store.modules.logger.error(err as string);
@@ -96,10 +96,24 @@ export default class DbUtils {
     }
   }
 
+  update = async <T>(path: string, search: string, replace: T, fuseOptions?: IFuseOptions<T>): Promise<T | undefined> => {
+    try {
+      const data = await this.db?.getData(path);
+      const fuse = new Fuse(data, fuseOptions);
+      const results = fuse.search(search);
+      if (!results) throw "Could not find item to update";
+      data[results[0].refIndex] = replace;
+      this.db?.push(path, data, true);
+      return results[0].item;
+    } catch (err) {
+      return undefined;
+    }
+  }
+
   delete = async <T>(path: string, search: string, fuseOptions?: IFuseOptions<T>): Promise<T | undefined> => {
     try {
       const fuse = new Fuse(await this.db?.getData(path), fuseOptions);
-      const results = fuse.search(search)
+      const results = fuse.search(search);
       if (!results) throw "Could not find item to delete";
       const filtered = this.db?.filter(path, d => d !== results[0].item);
       await this.db?.push(path, filtered, true);
