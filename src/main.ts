@@ -3,6 +3,7 @@ import useRouter from "@/router";
 import PredictionApi from "@api/predictionApi";
 import BirdFactApi from "./api/birdFactApi";
 import MastodonApi from "./api/mastodonApi";
+import Globals from "./utils/global";
 
 type Params = {
   message: string;
@@ -28,20 +29,24 @@ const script: Firebot.CustomScript<Params> = {
     },
   }),
   run: async (runRequest) => {
-    const { modules } = runRequest;
-    const { httpServer } = modules;
+    const { httpServer } = runRequest.modules;
     useRouter(httpServer);
 
+    // Set Globals
+    Globals.modules = runRequest.modules;
+
+    Globals.modules.logger.info("Global properties set");
+
     // Predictions
-    const predictionApi = new PredictionApi("./db/predictions.db", modules);
+    const predictionApi = new PredictionApi("./db/predictions.db");
     await predictionApi.setup();
 
     // Bird Facts
-    const birdFactApi = new BirdFactApi(modules);
+    const birdFactApi = new BirdFactApi();
     await birdFactApi.setup();
 
     // Mastodon
-    const mastodonApi = new MastodonApi(modules);
+    const mastodonApi = new MastodonApi();
     await mastodonApi.setup();
   },
 };

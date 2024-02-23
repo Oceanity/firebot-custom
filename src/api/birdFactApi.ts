@@ -1,5 +1,4 @@
 import NuthatchUtils from "@/utils/nuthatchUtils";
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import * as dotenv from "dotenv";
 import {
@@ -13,31 +12,30 @@ import { endpointErrorHandler, getRequestDataFromUri } from "@/utils/requestUtil
 import BirdFactUtils from "@/utils/birdFactUtils";
 import Api from "./apiCommon";
 dotenv.config({ path: __dirname + '/.env' });
+import store from "@u/global";
 
 export default class BirdFactApi {
   private readonly birdFactUtils: BirdFactUtils;
   private readonly nuthatchUtils: NuthatchUtils;
-  private readonly modules: ScriptModules;
   private readonly base: string;
 
-  constructor(modules: ScriptModules) {
-    this.birdFactUtils = new BirdFactUtils(modules);
-    this.nuthatchUtils = new NuthatchUtils(modules);
-    this.modules = modules;
+  constructor() {
+    this.birdFactUtils = new BirdFactUtils();
+    this.nuthatchUtils = new NuthatchUtils();
 
     this.base = "/birdFacts";
   }
 
   public setup = async () => {
-    this.modules.logger.info("Setting up BirdFactApi...");
+    store.modules.logger.info("Setting up BirdFactApi...");
     await this.birdFactUtils.setup();
     await this.nuthatchUtils.setup();
     await this.registerEndpoints();
   }
 
   private registerEndpoints = async () => {
-    const { modules, base } = this;
-    const { httpServer } = modules;
+    const { base } = this;
+    const { httpServer } = store.modules;
 
     // Birb Fact Endpoints
     httpServer.registerCustomRoute(Api.prefix, base, "PUT", this.putNewBirdFactHandler);
@@ -104,7 +102,7 @@ export default class BirdFactApi {
       res.send(await this.birdFactUtils.deleteLoadingMessage(message));
       return true;
     } catch(err) {
-      return endpointErrorHandler(this.modules.logger, err, res);
+      return endpointErrorHandler(store.modules.logger, err, res);
     }
   }
   //#endregion
@@ -116,7 +114,7 @@ export default class BirdFactApi {
       res.send(topics);
       return true;
     } catch(err) {
-      return endpointErrorHandler(this.modules.logger, err, res);
+      return endpointErrorHandler(store.modules.logger, err, res);
     }
   }
 
@@ -126,7 +124,7 @@ export default class BirdFactApi {
       res.send(topic);
       return true;
     } catch (err) {
-      return endpointErrorHandler(this.modules.logger, err, res);
+      return endpointErrorHandler(store.modules.logger, err, res);
     }
   }
 
@@ -136,7 +134,7 @@ export default class BirdFactApi {
       res.send(await this.birdFactUtils.pushTopic(topic));
       return true;
     } catch (err) {
-      return endpointErrorHandler(this.modules.logger, err, res);
+      return endpointErrorHandler(store.modules.logger, err, res);
     }
   }
 
@@ -146,7 +144,7 @@ export default class BirdFactApi {
       res.send(await this.birdFactUtils.deleteTopic(topic));
       return true;
     } catch (err) {
-      return endpointErrorHandler(this.modules.logger, err, res);
+      return endpointErrorHandler(store.modules.logger, err, res);
     }
   }
   //#endregion

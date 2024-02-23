@@ -7,24 +7,22 @@ import {
 } from "@t/predictions";
 import { getRandomItem } from "@u/array";
 import DbUtils from "./dbUtils";
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import {
   Respond409Conflict,
   Respond503ServiceUnavailable
 } from "@t/apiResponses";
+import store from "@u/global";
 
 export default class PredictionUtils {
   private readonly db: DbUtils;
-  private readonly modules: ScriptModules;
 
   /**
    * Instantiates PredictionUtils class
    * @param {string} path Relative path to save db to
    * @param {ScriptModules} modules ScriptModules reference
    */
-  constructor(path: string, modules: ScriptModules) {
-    this.db = new DbUtils(modules, path);
-    this.modules = modules;
+  constructor(path: string) {
+    this.db = new DbUtils(path);
   }
 
   /**
@@ -39,7 +37,7 @@ export default class PredictionUtils {
    * @returns {Promise<PredictionLibrary>} all Predictions stored in db as PredictionLibrary
    */
   public async getAll(): Promise<PredictionLibrary | undefined> {
-    const { logger } = this.modules;
+    const { logger } = store.modules;
 
     if (!this.db.isReady()) {
       logger.error(`Prediction Db is not ready, cannot getAll()`);
@@ -113,7 +111,7 @@ export default class PredictionUtils {
    * @returns {boolean} `true` if `db` has completed `setup()`
    */
   private isDbReady = (method?: string): boolean => {
-    const { logger } = this.modules;
+    const { logger } = store.modules;
 
     if (!this.db.isReady()) {
       logger.error(`Prediction Db is not ready, cannot complete method ${method}`);

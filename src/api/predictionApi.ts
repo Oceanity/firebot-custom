@@ -1,14 +1,13 @@
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
 import PredictionUtils from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
 import { resolve } from "path";
 import Api from "@api/apiCommon";
+import store from "@u/global";
 
 export default class PredictionApi {
   private predictions: PredictionUtils;
-  private modules: ScriptModules;
 
   private readonly base: string = "/predictions";
 
@@ -19,10 +18,8 @@ export default class PredictionApi {
    */
   constructor(
     path: string = resolve(__dirname, "./db/predictions.db"),
-    modules: ScriptModules,
   ) {
-    this.modules = modules;
-    this.predictions = new PredictionUtils(path, modules);
+    this.predictions = new PredictionUtils(path);
   }
 
   /**
@@ -38,8 +35,8 @@ export default class PredictionApi {
    * @returns {boolean} `true` if operation was successful
    */
   private async registerEndpoints(): Promise<boolean> {
-    const { modules, base } = this;
-    const { httpServer, logger } = modules;
+    const { base } = this;
+    const { httpServer, logger } = store.modules;
 
     let response = true;
 
@@ -56,8 +53,8 @@ export default class PredictionApi {
    * @returns {boolean} `true` if operation was successful
    */
   public async unregisterEndpoints(): Promise<boolean> {
-    const { modules, base } = this;
-    const { httpServer, logger } = modules;
+    const { base } = this;
+    const { httpServer, logger } = store.modules;
 
     let response = true;
 
@@ -73,23 +70,20 @@ export default class PredictionApi {
    * GET : /oceanity/predictions
    */
   private getPredictionHandler = async (req: Request, res: Response): Promise<void> => {
-    const { modules, predictions } = this;
+    const { predictions } = this;
+    const { logger } = store.modules;
     const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
 
-    modules.logger.info("Getting random Prediction...");
     const response = await predictions.getRandomPrediction(slug);
 
-    if (!response) {
-      modules.logger.info(`Could not get random prediction from slug ${slug}`);
-      return;
-    }
+    if (!response) throw `Could not get random prediction from slug ${slug}`;
 
     if (response.status != 200) {
-      modules.logger.error(`Error ${response.status}: ${response.message}`);
+      logger.error(`Error ${response.status}: ${response.message}`);
       return;
     }
 
-    modules.logger.info(`Pulled prediction ${response.prediction.title}`);
+    logger.info(`Pulled prediction ${response.prediction.title}`);
 
     const predictionResponse: CreatePredictionRequest = {
       ...response.prediction,

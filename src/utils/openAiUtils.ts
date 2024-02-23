@@ -1,17 +1,12 @@
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam, ChatCompletionCreateParamsNonStreaming } from "openai/resources";
 
 export default class OpenApiUtils {
-  private readonly modules: ScriptModules;
   private readonly openAi: OpenAI;
   private readonly chatApiBase: string;
   private readonly baseBody: ChatCompletionCreateParamsNonStreaming;
 
-  constructor(modules: ScriptModules) {
-    modules.logger.info(process.env.OPENAI_API_KEY ?? "");
-
-    this.modules = modules;
+  constructor() {
     this.openAi = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     })

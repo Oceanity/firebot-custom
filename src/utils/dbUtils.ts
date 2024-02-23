@@ -1,14 +1,13 @@
 import { ensureDir } from "fs-extra";
 import { join, dirname } from "path";
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { FindCallback, JsonDB } from "node-json-db";
 import * as _ from "lodash";
 import { getRandomInteger } from "./numbers";
 import Fuse, { IFuseOptions } from "fuse.js";
+import store from "@u/global";
 
 export default class DbUtils {
   private readonly path: string;
-  private readonly modules: ScriptModules;
   private readonly dir: string;
 
   private db?: JsonDB;
@@ -19,8 +18,7 @@ export default class DbUtils {
    * @param {string} path The relative path to the created .db file
    * @param {ScriptModules} modules ScriptModules reference for logging
    */
-  constructor(modules: ScriptModules, path: string = "./db/database.db") {
-    this.modules = modules;
+  constructor(path: string = "./db/database.db") {
     this.path = join(__dirname, path);
     this.dir = dirname(this.path);
   }
@@ -29,12 +27,12 @@ export default class DbUtils {
    * Creates provided output dir and prepares helper functions
    */
   public async setup(): Promise<void> {
-    const { JsonDb, logger } = this.modules;
+    const { JsonDb, logger } = store.modules;
 
     logger.info(`Ensuring directory "${this.dir}" exists...`);
     await ensureDir(this.dir);
 
-    //@ts-expect-error 2351
+    //@ts-expect-error 18046
     this.db = new JsonDb(this.path, true, true);
 
     this.ready = true;
@@ -47,7 +45,8 @@ export default class DbUtils {
    * @returns {T} Returns data <T> stored in the loaded db at the given path
    */
   public async get<T>(path: string, defaults?: T): Promise<T | undefined> {
-    const { logger } = this.modules;
+    const { logger } = store.modules;
+
     try {
       return this.db?.getData(path) as T;
     } catch (err) {
@@ -82,7 +81,7 @@ export default class DbUtils {
       this.db?.push(path, data, override);
       return true;
     } catch (err) {
-      this.modules.logger.error(err as string);
+      store.modules.logger.error(err as string);
       return false;
     }
   }
@@ -91,7 +90,7 @@ export default class DbUtils {
     try {
       return await this.db?.filter<T>(path, findCallback) ?? [];
     } catch (err) {
-      this.modules.logger.error(`Failed to filter "${path}" in "${this.path}"`);
+      store.modules.logger.error(`Failed to filter "${path}" in "${this.path}"`);
       return [];
     }
   }
@@ -105,7 +104,7 @@ export default class DbUtils {
       await this.db?.push(path, filtered, true);
       return results[0].item;
     } catch (err) {
-      this.modules.logger.error(err as string);
+      store.modules.logger.error(err as string);
       return undefined;
     }
   }

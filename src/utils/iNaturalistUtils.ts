@@ -1,10 +1,10 @@
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { iNaturalistData } from "@t/birdFacts";
+// import store from "@u/global";
 
 export default class iNaturalistUtils {
   public static readonly apiBase: string = "https://api.inaturalist.org/v1/taxa";
 
-  public static getBirdInfo = async (sciName: string, modules?: ScriptModules): Promise<iNaturalistData | undefined> => {
+  public static getBirdInfo = async (sciName: string): Promise<iNaturalistData | undefined> => {
     const response = await fetch("https://api.inaturalist.org/v1/taxa?" + new URLSearchParams({
       q: sciName,
       rank: "species",
@@ -12,8 +12,6 @@ export default class iNaturalistUtils {
     }));
     const data = await response.json();
     const bird = data.results.pop();
-
-    if (modules) modules.logger.info(JSON.stringify(bird));
 
     return {
       id: bird.id,

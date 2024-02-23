@@ -1,19 +1,17 @@
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { MastodonContext, RemoteAttachment } from "@t/mastodon";
 import * as dotenv from "dotenv";
 import { resolve } from "path"
 import FileUtils from "./fileUtils";
 dotenv.config({ path: resolve(__dirname, "./.env") });
+import store from "@u/global";
 
 export default class MastodonUtils {
-  private readonly modules: ScriptModules;
   private readonly headers: HeadersInit;
   private readonly apiBase: string;
 
-  constructor(modules: ScriptModules, context: MastodonContext) {
+  constructor(context: MastodonContext) {
     if (!context.accessToken) throw "Could not read MASTODON_ACCESS_TOKEN";
 
-    this.modules = modules;
     this.apiBase = context.apiBase;
     this.headers = {
       "Authorization": `Bearer ${context.accessToken}`
@@ -21,7 +19,7 @@ export default class MastodonUtils {
   }
 
   public postNewMessage = async(status: string, attachments?: RemoteAttachment[]): Promise<boolean> => {
-    const { apiBase, headers, modules } = this;
+    const { apiBase, headers } = this;
 
     const attachmentIds: string[] = [];
 
@@ -41,7 +39,7 @@ export default class MastodonUtils {
         if (!uploadResp) continue;
 
         const data = await uploadResp.json();
-        modules.logger.info(JSON.stringify(data));
+        store.modules.logger.info(JSON.stringify(data));
         attachmentIds.push(data.id);
       }
     }
@@ -64,7 +62,7 @@ export default class MastodonUtils {
     const data = await response.json();
 
     if (data.error) {
-      this.modules.logger.error(data.error);
+      store.modules.logger.error(data.error);
       return false;
     }
 
