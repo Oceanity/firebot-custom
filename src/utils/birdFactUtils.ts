@@ -29,7 +29,7 @@ export default class BirdFactUtils {
 
     if (!bird) throw "Could not get Bird from Nuthatch API!";
 
-    const iNatData = await iNaturalistUtils.getBirdInfo(bird.sciName);
+    const iNatData = await iNaturalistUtils.getBirdInfo(bird.name);
 
     const chatResponse = await openAi.chatCompletion([
       { role: "system", content: "You are a female ornithologist who doesn't actually know as much about birds as you think, but will confidently state incorrect facts about them." },
