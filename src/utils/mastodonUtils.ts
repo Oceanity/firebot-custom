@@ -15,7 +15,7 @@ export default class MastodonUtils {
     }
   }
 
-  public postNewMessage = async(status: string, attachments?: RemoteAttachment[]): Promise<boolean> => {
+  postNewMessage = async(status: string, attachments?: RemoteAttachment[]): Promise<boolean> => {
     const { apiBase, headers } = this;
 
     const attachmentIds: string[] = [];

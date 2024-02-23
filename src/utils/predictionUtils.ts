@@ -28,7 +28,7 @@ export default class PredictionUtils {
   /**
    * Initializes DbUtils
    */
-  public async setup(): Promise<void> {
+  setup = async(): Promise<void> => {
     await this.db.setup();
   }
 
@@ -36,7 +36,7 @@ export default class PredictionUtils {
    * Gets all Predictions in db as PredictionLibrary
    * @returns {Promise<PredictionLibrary>} all Predictions stored in db as PredictionLibrary
    */
-  public async getAll(): Promise<PredictionLibrary | undefined> {
+  getAll = async (): Promise<PredictionLibrary | undefined> => {
     const { logger } = store.modules;
 
     if (!this.db.isReady()) {
@@ -53,7 +53,7 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {PredictionOptions} PredictionOptions retrieved from db at key `slug`
    */
-  public async getPredictionOptions(slug: string): Promise<PredictionOptionsResponse> {
+  getPredictionOptions = async (slug: string): Promise<PredictionOptionsResponse> => {
     if (!this.isDbReady(`getPredictionOptions(${slug})`))
       return Respond409Conflict("Prediction Db not ready") as PredictionOptionsResponse;
 
@@ -72,7 +72,7 @@ export default class PredictionUtils {
    * @param {PredictionOptions} options PredictionOptions to save to the db
    * @returns {boolean} `true` if operation completed successfully
    */
-  public async pushPredictionOptions(slug: string, options: PredictionOptions): Promise<boolean> {
+  pushPredictionOptions = async (slug: string, options: PredictionOptions): Promise<boolean> => {
     if (!this.isPredictionOptionsValid(options)) return false;
 
     return await this.db.push<PredictionOptions>(`/${slug}`, options);
@@ -83,7 +83,7 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {Prediction} Randomized Prediction object
    */
-  public async getRandomPrediction(slug: string): Promise<PredictionResponse | undefined> {
+  getRandomPrediction = async (slug: string): Promise<PredictionResponse | undefined> => {
     if (!this.isDbReady(`getRandomPrediction(${slug})`))
       return Respond503ServiceUnavailable("Prediction Db not ready") as PredictionResponse;
 

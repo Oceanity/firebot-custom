@@ -1,6 +1,4 @@
 import { iNaturalistData } from "@t/birdFacts";
-// import store from "@u/global";
-
 export default class iNaturalistUtils {
   public static readonly apiBase: string = "https://api.inaturalist.org/v1/taxa";
 

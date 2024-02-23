@@ -19,7 +19,7 @@ export default class OpenApiUtils {
     }
   }
 
-  public chatCompletion = async (messages: ChatCompletionMessageParam[]) => {
+  chatCompletion = async (messages: ChatCompletionMessageParam[]) => {
     const chatCompletion = await this.openAi.chat.completions.create({
       model: "gpt-3.5-turbo",
       temperature: 1.4,

@@ -1,7 +1,6 @@
 import BirdFactUtils from "@/utils/birdFactUtils";
 import MastodonUtils from "@/utils/mastodonUtils";
 import { Request, Response } from "express";
-import Api from "./apiCommon";
 import store from "@u/global";
 
 export default class MastodonApi {
@@ -13,17 +12,25 @@ export default class MastodonApi {
 
   constructor() {
     const accessToken = process.env[this.accessTokenVar];
-    store.modules.logger.info(`Mastodon access token: ${accessToken}`);
     if (!accessToken) throw "Cannot get Access Token from .env";
 
     this.birdFact = new BirdFactUtils("./db/mastodonBirbFacts.db");
     this.mastodon = new MastodonUtils({ apiBase: "https://botsin.space/api", accessToken: accessToken ?? "" });
-
-    store.modules.httpServer.registerCustomRoute(Api.prefix, `${MastodonApi.apiBase}/birbFact`, "POST", this.postBirbFactHandler);
   }
 
-  public setup = async(): Promise<void> => {
+  setup = async(): Promise<void> => {
     await this.birdFact.setup();
+    await this.registerEndpoints();
+  }
+
+  private registerEndpoints = async (): Promise<boolean> => {
+    const { modules, prefix } = store;
+    const { httpServer } = modules;
+
+    let result = true;
+    result &&= httpServer.registerCustomRoute(prefix, `${MastodonApi.apiBase}/birbFact`, "POST", this.postBirbFactHandler);
+
+    return result;
   }
 
   private postBirbFactHandler = async (req: Request, res: Response): Promise<boolean> => {

@@ -15,7 +15,7 @@ export default class NuthatchUtils {
     this.headers.set("API-Key", process.env["NUTHATCH_API_KEY"] ?? "");
   }
 
-  public setup = async () : Promise<void> => {
+  setup = async () : Promise<void> => {
     const { apiBase, birdsPerPage, headers } = this;
     let hasFoundEnd: boolean = false;
 
@@ -39,7 +39,7 @@ export default class NuthatchUtils {
     store.modules.logger.info(`Bird pages: ${this.pages}`);
   }
 
-  public getRandomBird = async(): Promise<Bird | undefined> => {
+  getRandomBird = async(): Promise<Bird | undefined> => {
     const { apiBase, headers } = this;
 
     if (!this.isApiKeySet()) throw "Could not load Nuthatch API Key";

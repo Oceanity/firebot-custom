@@ -2,7 +2,6 @@ export type Media = {
   file: FormData;
 }
 
-
 export type RemoteAttachment = {
   url: string;
   description: string;

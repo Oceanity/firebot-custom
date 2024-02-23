@@ -1,5 +1,7 @@
 import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 
 export default class Globals {
-  public static modules: ScriptModules;
+  static modules: ScriptModules;
+  static readonly botsinSpaceRoot: string = "https://botsin.space/api";
+  static readonly prefix: string = "oceanity";
 }

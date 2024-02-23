@@ -2,13 +2,10 @@ import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
 import PredictionUtils from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
-import { resolve } from "path";
-import Api from "@api/apiCommon";
 import store from "@u/global";
 
 export default class PredictionApi {
   private predictions: PredictionUtils;
-
   private readonly base: string = "/predictions";
 
   /**
@@ -16,55 +13,55 @@ export default class PredictionApi {
    * @param {string} path Path to save Predictions.db file
    * @param {ScriptModules} modules ScriptModules reference
    */
-  constructor(
-    path: string = resolve(__dirname, "./db/predictions.db"),
-  ) {
+  constructor(path: string = "./db/predictions.db") {
     this.predictions = new PredictionUtils(path);
   }
 
   /**
    * Initializes DbUtils and registers endpoints
    */
-  public async setup(): Promise<void> {
+  setup = async (): Promise<void> => {
     await this.predictions.setup();
     await this.registerEndpoints();
-  }
+  };
 
   /**
    * Registers Prediction endpoints to Firebot's HttpServer
    * @returns {boolean} `true` if operation was successful
    */
-  private async registerEndpoints(): Promise<boolean> {
+  private registerEndpoints = async (): Promise<boolean> => {
     const { base } = this;
-    const { httpServer, logger } = store.modules;
+    const { modules, prefix } = store;
+    const { httpServer, logger } = modules;
 
     let response = true;
 
     logger.info("Registering Prediction Endpoints....");
-    response &&= httpServer.registerCustomRoute(Api.prefix, base, "GET", this.getPredictionHandler);
-    response &&= httpServer.registerCustomRoute(Api.prefix, base, "POST", this.postPredictionHandler);
-    response &&= httpServer.registerCustomRoute(Api.prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
+    response &&= httpServer.registerCustomRoute(prefix, base, "GET", this.getPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, base, "POST", this.postPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
 
     return response;
-  }
+  };
 
   /**
    * Unregisters Prediction Endpoints from Firebot's HttpServer
    * @returns {boolean} `true` if operation was successful
    */
-  public async unregisterEndpoints(): Promise<boolean> {
+  unregisterEndpoints = async (): Promise<boolean> => {
     const { base } = this;
-    const { httpServer, logger } = store.modules;
+    const { modules, prefix } = store;
+    const { httpServer, logger } = modules;
 
     let response = true;
 
     logger.info("Unregistering Prediction Endpoints...");
-    response &&= httpServer.unregisterCustomRoute(Api.prefix, base, "GET");
-    response &&= httpServer.unregisterCustomRoute(Api.prefix, base, "POST");
-    response &&= httpServer.unregisterCustomRoute(Api.prefix, `${base}/titles`, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, base, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, base, "POST");
+    response &&= httpServer.unregisterCustomRoute(prefix, `${base}/titles`, "GET");
 
     return response;
-  }
+  };
 
   /**
    * GET : /oceanity/predictions
@@ -88,11 +85,11 @@ export default class PredictionApi {
     const predictionResponse: CreatePredictionRequest = {
       ...response.prediction,
       broadcaster_id,
-      prediction_window: 300
-    }
+      prediction_window: 300,
+    };
 
     res.send(predictionResponse);
-  }
+  };
 
   /**
    * POST : /oceanity/predictions
@@ -104,7 +101,7 @@ export default class PredictionApi {
     predictions.pushPredictionOptions(slug, { titleChoices, outcomeChoices });
 
     res.send(true);
-  }
+  };
 
   /**
    * GET : /oceanity/predictions/titles?slug=<slug>
@@ -125,7 +122,7 @@ export default class PredictionApi {
     res.send({
       status: response.status,
       titles: titleChoices,
-      count: titleChoices.length
+      count: titleChoices.length,
     });
-  }
+  };
 }

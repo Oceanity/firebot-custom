@@ -6,6 +6,7 @@ import MastodonApi from "./api/mastodonApi";
 import { resolve } from "path";
 import * as dotenv from "dotenv";
 import store from "@u/global";
+import BirdFactTopicApi from "./api/birdFactTopicApi";
 
 type Params = {
   message: string;
@@ -41,17 +42,11 @@ const script: Firebot.CustomScript<Params> = {
     // Use Router
     useRouter(store.modules.httpServer);
 
-    // Predictions
-    const predictionApi = new PredictionApi("./db/predictions.db");
-    await predictionApi.setup();
-
-    // Bird Facts
-    const birdFactApi = new BirdFactApi();
-    await birdFactApi.setup();
-
-    // Mastodon
-    const mastodonApi = new MastodonApi();
-    await mastodonApi.setup();
+    // Setup API Endpoints
+    await new PredictionApi("./db/predictions.db").setup();
+    await new BirdFactApi().setup();
+    await new BirdFactTopicApi().setup();
+    await new MastodonApi().setup();
   },
 };
 

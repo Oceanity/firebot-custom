@@ -26,7 +26,7 @@ export default class DbUtils {
   /**
    * Creates provided output dir and prepares helper functions
    */
-  public async setup(): Promise<void> {
+  setup = async (): Promise<DbUtils> => {
     const { JsonDb, logger } = store.modules;
 
     logger.info(`Ensuring directory "${this.dir}" exists...`);
@@ -34,8 +34,9 @@ export default class DbUtils {
 
     //@ts-expect-error 18046
     this.db = new JsonDb(this.path, true, true);
-
     this.ready = true;
+
+    return this;
   }
 
   /**
@@ -44,7 +45,7 @@ export default class DbUtils {
    * @param {T?} defaults (Optional) Default data to fill db at path if none found
    * @returns {T} Returns data <T> stored in the loaded db at the given path
    */
-  public async get<T>(path: string, defaults?: T): Promise<T | undefined> {
+  get = async <T>(path: string, defaults?: T): Promise<T | undefined> => {
     const { logger } = store.modules;
 
     try {
@@ -56,13 +57,13 @@ export default class DbUtils {
     }
   }
 
-  public getFirst = async <T>(path:string): Promise<T | undefined> =>
+  getFirst = async <T>(path:string): Promise<T | undefined> =>
     _.first(await this.db?.getData(path));
 
-  public getLast = async <T>(path:string): Promise<T | undefined> =>
+  getLast = async <T>(path:string): Promise<T | undefined> =>
     _.last(await this.db?.getData(path));
 
-  public getRandom = async <T>(path: string, defaults?: T[]): Promise<T | undefined> =>
+  getRandom = async <T>(path: string, defaults?: T[]): Promise<T | undefined> =>
     _.nth((await this.get<T[]>(path, defaults)), getRandomInteger(await this.count(path)));
 
   /**
@@ -72,7 +73,7 @@ export default class DbUtils {
    * @param {boolean} override If `true`, will overwrite data in the db
    * @returns {boolean} `true` if operation completed successfully
    */
-  public push = async <T>(path: string, data: T, override: boolean = false, allowDuplicates: boolean = false): Promise<boolean> => {
+  push = async <T>(path: string, data: T, override: boolean = false, allowDuplicates: boolean = false): Promise<boolean> => {
     try {
       if (!allowDuplicates) {
         const find = await this.db?.find<T>(path, d => d == data);
@@ -86,7 +87,7 @@ export default class DbUtils {
     }
   }
 
-  public filter = async <T>(path: string, findCallback: FindCallback): Promise<T[]> => {
+  filter = async <T>(path: string, findCallback: FindCallback): Promise<T[]> => {
     try {
       return await this.db?.filter<T>(path, findCallback) ?? [];
     } catch (err) {
@@ -95,7 +96,7 @@ export default class DbUtils {
     }
   }
 
-  public delete = async <T>(path: string, search: string, fuseOptions?: IFuseOptions<T>): Promise<T | undefined> => {
+  delete = async <T>(path: string, search: string, fuseOptions?: IFuseOptions<T>): Promise<T | undefined> => {
     try {
       const fuse = new Fuse(await this.db?.getData(path), fuseOptions);
       const results = fuse.search(search)
@@ -114,16 +115,16 @@ export default class DbUtils {
    * @param {string} path Path of array to count in db
    * @returns {number} Number of items in array, or -1 on error
    */
-  public count = async (path: string): Promise<number> =>
+  count = async (path: string): Promise<number> =>
       await this.db?.exists(path) ? await this.db?.count(path) ?? 0 : 0;
 
   /**
    * Check if DbUtils has run `setup()` and is able to handle commands
    * @returns {boolean} `true` if DbUtils has run `setup()` and is able to handle commands
    */
-  public isReady = (): boolean => this.ready;
+  isReady = (): boolean => this.ready;
 
-  public isInBounds = async (path: string, index?: number): Promise<boolean> =>
+  isInBounds = async (path: string, index?: number): Promise<boolean> =>
     index != undefined
     && await this.count(path) > index;
 }

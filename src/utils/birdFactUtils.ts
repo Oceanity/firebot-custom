@@ -33,12 +33,12 @@ export default class BirdFactUtils {
     this.topicsPath = "/topics";
   }
 
-  public setup = async (): Promise<void> => {
+  setup = async (): Promise<void> => {
     await this.db.setup();
     await this.nuthatch.setup();
   }
 
-  public putBirdFact = async (): Promise<BirdFact> => {
+  putBirdFact = async (): Promise<BirdFact> => {
     const { openAi } = this;
     const topic = await this.getRandomTopic();
     const bird = await this.nuthatch.getRandomBird();
@@ -74,44 +74,44 @@ export default class BirdFactUtils {
     return newFact;
   }
 
-  public getAllBirdFacts = async (): Promise<BirdFact[]> =>
+  getAllBirdFacts = async (): Promise<BirdFact[]> =>
     await this.db.get<BirdFact[]>(this.factPath) ?? [];
 
-  public getBirdFact = async (id?: number): Promise<BirdFact | undefined> =>
+  getBirdFact = async (id?: number): Promise<BirdFact | undefined> =>
     id && await this.db.isInBounds(this.factPath, id - 1) ? (await this.db.get<BirdFact[]>(this.factPath) ?? [])[id - 1] : this.db.getRandom<BirdFact>(this.factPath);
 
   //#region Loading Message Functions
-  public pushLoadingMessage = async (message: string): Promise<boolean> =>
+  pushLoadingMessage = async (message: string): Promise<boolean> =>
     await this.db.push(this.loadingMessagePath, [message]);
 
-  public getAllLoadingMessages = async (): Promise<string[]> =>
+  getAllLoadingMessages = async (): Promise<string[]> =>
     await this.db.get<string[]>(this.loadingMessagePath) ?? [];
 
-  public getRandomLoadingMessage = async (): Promise<string> =>
+  getRandomLoadingMessage = async (): Promise<string> =>
     await this.db.getRandom<string>(this.loadingMessagePath) ?? "Generating new birb fact...";
 
-  public updateLoadingMessage = async (oldMessage: string, newMessage: string): Promise<boolean> => {
+  updateLoadingMessage = async (oldMessage: string, newMessage: string): Promise<boolean> => {
     const oldCount = await this.db.count(this.loadingMessagePath);
     const response = await this.db.filter(this.loadingMessagePath, m => m === oldMessage ? newMessage : m);
     if (!response || oldCount == await this.db.count(this.loadingMessagePath)) return false;
     return await this.db.push<string>(this.loadingMessagePath, newMessage);
   }
 
-  public deleteLoadingMessage = async (message: string): Promise<string | undefined> =>
+  deleteLoadingMessage = async (message: string): Promise<string | undefined> =>
     await this.db.delete<string>(this.loadingMessagePath, message);
   //#endregion
 
   //#region Topic Functions
-  public pushTopic = async (topic: string): Promise<boolean> =>
+  pushTopic = async (topic: string): Promise<boolean> =>
     await this.db.push(this.topicsPath, [topic]);
 
-  public getAllTopics = async (): Promise<string[]> =>
+  getAllTopics = async (): Promise<string[]> =>
     await this.db.get<string[]>(this.topicsPath) ?? [];
 
-  public getRandomTopic = async (): Promise<string> =>
+  getRandomTopic = async (): Promise<string> =>
     await this.db.getRandom<string>(this.topicsPath, []) ?? "most interesting attributes";
 
-  public deleteTopic = async (topic: string): Promise<string | undefined> =>
+  deleteTopic = async (topic: string): Promise<string | undefined> =>
     await this.db.delete<string>(this.topicsPath, topic);
   //#endregion
 }
