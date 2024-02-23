@@ -36,7 +36,6 @@ export default class MastodonUtils {
         if (!uploadResp) continue;
 
         const data = await uploadResp.json();
-        store.modules.logger.info(JSON.stringify(data));
         attachmentIds.push(data.id);
       }
     }

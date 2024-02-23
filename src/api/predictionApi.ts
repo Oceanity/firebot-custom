@@ -6,7 +6,7 @@ import store from "@u/global";
 
 export default class PredictionApi {
   private predictions: PredictionUtils;
-  private readonly base: string = "/predictions";
+  private readonly route: string = "/predictions";
 
   /**
    * Instantiates Prediction API class
@@ -30,16 +30,15 @@ export default class PredictionApi {
    * @returns {boolean} `true` if operation was successful
    */
   private registerEndpoints = async (): Promise<boolean> => {
-    const { base } = this;
+    const { route } = this;
     const { modules, prefix } = store;
-    const { httpServer, logger } = modules;
+    const { httpServer } = modules;
 
     let response = true;
 
-    logger.info("Registering Prediction Endpoints....");
-    response &&= httpServer.registerCustomRoute(prefix, base, "GET", this.getPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, base, "POST", this.postPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
+    response &&= httpServer.registerCustomRoute(prefix, route, "GET", this.getPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, route, "POST", this.postPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, `${route}/titles`, "GET", this.getPredictionTitlesHandler);
 
     return response;
   };
@@ -49,16 +48,15 @@ export default class PredictionApi {
    * @returns {boolean} `true` if operation was successful
    */
   unregisterEndpoints = async (): Promise<boolean> => {
-    const { base } = this;
+    const { route } = this;
     const { modules, prefix } = store;
-    const { httpServer, logger } = modules;
+    const { httpServer } = modules;
 
     let response = true;
 
-    logger.info("Unregistering Prediction Endpoints...");
-    response &&= httpServer.unregisterCustomRoute(prefix, base, "GET");
-    response &&= httpServer.unregisterCustomRoute(prefix, base, "POST");
-    response &&= httpServer.unregisterCustomRoute(prefix, `${base}/titles`, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, route, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, route, "POST");
+    response &&= httpServer.unregisterCustomRoute(prefix, `${route}/titles`, "GET");
 
     return response;
   };
@@ -68,19 +66,12 @@ export default class PredictionApi {
    */
   private getPredictionHandler = async (req: Request, res: Response): Promise<void> => {
     const { predictions } = this;
-    const { logger } = store.modules;
     const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
 
     const response = await predictions.getRandomPrediction(slug);
 
     if (!response) throw `Could not get random prediction from slug ${slug}`;
-
-    if (response.status != 200) {
-      logger.error(`Error ${response.status}: ${response.message}`);
-      return;
-    }
-
-    logger.info(`Pulled prediction ${response.prediction.title}`);
+    if (response.status != 200) throw `Error ${response.status}: ${response.message}`;
 
     const predictionResponse: CreatePredictionRequest = {
       ...response.prediction,

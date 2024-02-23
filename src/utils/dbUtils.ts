@@ -27,9 +27,8 @@ export default class DbUtils {
    * Creates provided output dir and prepares helper functions
    */
   setup = async (): Promise<DbUtils> => {
-    const { JsonDb, logger } = store.modules;
+    const { JsonDb } = store.modules;
 
-    logger.info(`Ensuring directory "${this.dir}" exists...`);
     await ensureDir(this.dir);
 
     //@ts-expect-error 18046

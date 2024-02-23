@@ -12,7 +12,6 @@ export default class BirdFactApi {
   }
 
   setup = async () => {
-    store.modules.logger.info("Setting up BirdFactApi...");
     await this.birdFactUtils.setup();
     await this.registerEndpoints();
   }

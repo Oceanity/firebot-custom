@@ -38,7 +38,6 @@ const script: Firebot.CustomScript<Params> = {
 
     // Set Globals
     store.modules = runRequest.modules;
-    store.modules.logger.info("Global properties set!");
 
     // Use Router
     useRouter(store.modules.httpServer);

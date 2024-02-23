@@ -35,8 +35,6 @@ export default class NuthatchUtils {
         hasFoundEnd = true;
       }
     }
-
-    store.modules.logger.info(`Bird pages: ${this.pages}`);
   }
 
   getRandomBird = async(): Promise<Bird | undefined> => {
