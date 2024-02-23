@@ -44,7 +44,15 @@ export default class MastodonApi {
       });
     }
 
-    const status = `🐦 Birb Fact #${fact.id}\n────────────────────────────\n${fact.bird.name} (${fact.bird.sciName})\n\n${fact.message} ${fact.iNatData ? `\n\n📸 ${fact.iNatData.photo_attribution}` : ""}`;
+    const status = [
+        `🐦 Birb Fact #${fact.id}`,
+        "────────────────────────────",
+        [
+          `${fact.bird.name} (${fact.bird.sciName})`,
+          `${fact.message}`,
+          `${fact.iNatData ? `📸 ${fact.iNatData.photo_attribution}` : ""}`
+        ].join("\n\n")
+      ].join("\n").trim();
 
     const response = await this.mastodon.postNewMessage(status, attachments);
 
