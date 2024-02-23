@@ -3,7 +3,9 @@ import useRouter from "@/router";
 import PredictionApi from "@api/predictionApi";
 import BirdFactApi from "./api/birdFactApi";
 import MastodonApi from "./api/mastodonApi";
-import Globals from "./utils/global";
+import { resolve } from "path";
+import * as dotenv from "dotenv";
+import store from "@u/global";
 
 type Params = {
   message: string;
@@ -29,13 +31,15 @@ const script: Firebot.CustomScript<Params> = {
     },
   }),
   run: async (runRequest) => {
-    const { httpServer } = runRequest.modules;
-    useRouter(httpServer);
+    // Config .env vars
+    dotenv.config({ path: resolve(__dirname, "./.env") });
 
     // Set Globals
-    Globals.modules = runRequest.modules;
+    store.modules = runRequest.modules;
+    store.modules.logger.info("Global properties set!");
 
-    Globals.modules.logger.info("Global properties set");
+    // Use Router
+    useRouter(store.modules.httpServer);
 
     // Predictions
     const predictionApi = new PredictionApi("./db/predictions.db");

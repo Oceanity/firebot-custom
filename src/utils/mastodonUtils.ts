@@ -1,8 +1,5 @@
 import { MastodonContext, RemoteAttachment } from "@t/mastodon";
-import * as dotenv from "dotenv";
-import { resolve } from "path"
 import FileUtils from "./fileUtils";
-dotenv.config({ path: resolve(__dirname, "./.env") });
 import store from "@u/global";
 
 export default class MastodonUtils {

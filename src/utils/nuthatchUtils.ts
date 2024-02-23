@@ -1,7 +1,5 @@
 import { Bird } from "@t/birdFacts";
 import { getRandomInteger } from "@u/numbers"
-import * as dotenv from "dotenv";
-dotenv.config({ path: `${__dirname}/.env` });
 import store from "@u/global";
 
 export default class NuthatchUtils {

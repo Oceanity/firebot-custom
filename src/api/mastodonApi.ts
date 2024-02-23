@@ -13,6 +13,7 @@ export default class MastodonApi {
 
   constructor() {
     const accessToken = process.env[this.accessTokenVar];
+    store.modules.logger.info(`Mastodon access token: ${accessToken}`);
     if (!accessToken) throw "Cannot get Access Token from .env";
 
     this.birdFact = new BirdFactUtils("./db/mastodonBirbFacts.db");

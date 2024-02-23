@@ -1,6 +1,5 @@
 import NuthatchUtils from "@/utils/nuthatchUtils";
 import { Request, Response } from "express";
-import * as dotenv from "dotenv";
 import {
   CreateLoadingMessageRequest,
   UpdateLoadingMessageRequest,
@@ -11,7 +10,6 @@ import {
 import { endpointErrorHandler, getRequestDataFromUri } from "@/utils/requestUtils";
 import BirdFactUtils from "@/utils/birdFactUtils";
 import Api from "./apiCommon";
-dotenv.config({ path: __dirname + '/.env' });
 import store from "@u/global";
 
 export default class BirdFactApi {
