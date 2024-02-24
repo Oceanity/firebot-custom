@@ -1,6 +1,6 @@
 import { MastodonContext, RemoteAttachment } from "@t/mastodon";
 import FileUtils from "./fileUtils";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class MastodonUtils {
   private readonly headers: HeadersInit;

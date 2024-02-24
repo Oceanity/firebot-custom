@@ -1,7 +1,7 @@
-import BirdFactUtils from "@/utils/birdFactUtils";
-import MastodonUtils from "@/utils/mastodonUtils";
+import BirdFactUtils from "@u/birdFactUtils";
+import MastodonUtils from "@u/mastodonUtils";
 import { Request, Response } from "express";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class MastodonApi {
   private static readonly apiBase: string = "/mastodon";

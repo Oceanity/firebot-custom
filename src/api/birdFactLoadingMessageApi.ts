@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import store from "@u/global";
-import BirdFactLoadingMessageUtils from "@/utils/birdFactLoadingMessageUtils";
+import store from "@u/store";
+import BirdFactLoadingMessageUtils from "@u/birdFactLoadingMessageUtils";
 import { CreateLoadingMessageRequest, DeleteLoadingMessageRequest, UpdateLoadingMessageRequest } from "@t/birdFacts";
 
 export default class BirdFactLoadingMessageApi {

@@ -1,6 +1,6 @@
 import { Bird } from "@t/birdFacts";
 import { getRandomInteger } from "@u/numbers"
-import store from "@u/global";
+import store from "@u/store";
 
 export default class NuthatchUtils {
   private readonly apiBase = "https://nuthatch.lastelm.software/v2";

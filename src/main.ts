@@ -5,7 +5,7 @@ import BirdFactApi from "./api/birdFactApi";
 import MastodonApi from "./api/mastodonApi";
 import { resolve } from "path";
 import * as dotenv from "dotenv";
-import store from "@u/global";
+import store from "@u/store";
 import BirdFactTopicApi from "./api/birdFactTopicApi";
 import BirdFactLoadingMessageApi from "./api/birdFactLoadingMessageApi";
 

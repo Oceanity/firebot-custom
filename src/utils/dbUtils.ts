@@ -4,7 +4,7 @@ import { FindCallback, JsonDB } from "node-json-db";
 import * as _ from "lodash";
 import { getRandomInteger } from "./numbers";
 import Fuse, { IFuseOptions } from "fuse.js";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class DbUtils {
   private readonly path: string;

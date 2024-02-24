@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
 import PredictionUtils from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class PredictionApi {
   private predictions: PredictionUtils;

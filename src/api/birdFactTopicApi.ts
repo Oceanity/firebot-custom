@@ -1,6 +1,6 @@
-import BirdFactTopicUtils from "@/utils/birdFactTopicUtils";
+import BirdFactTopicUtils from "@u/birdFactTopicUtils";
 import { Request, Response } from "express";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class BirdFactTopicApi {
   private readonly route: string = "/birdFacts/topics";

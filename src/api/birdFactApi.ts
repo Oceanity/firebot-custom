@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { getRequestDataFromUri } from "@/utils/requestUtils";
-import BirdFactUtils from "@/utils/birdFactUtils";
-import store from "@u/global";
+import { getRequestDataFromUri } from "@u/requestUtils";
+import BirdFactUtils from "@u/birdFactUtils";
+import store from "@u/store";
 
 export default class BirdFactApi {
   private static readonly route: string= "/birdFacts";
@@ -27,7 +27,6 @@ export default class BirdFactApi {
     httpServer.registerCustomRoute(prefix, route, "PUT", this.putHandler);
   }
 
-  //#region Endpoints Handlers
   private getHandler = async (req: Request, res: Response): Promise<void> => {
     const { id } = getRequestDataFromUri(req.url).params;
     res.send(await this.birdFactUtils.getBirdFact(parseInt(id)));
@@ -40,5 +39,4 @@ export default class BirdFactApi {
   private putHandler = async (req: Request, res: Response): Promise<void> => {
     res.send(await this.birdFactUtils.putBirdFact());
   }
-  //#endregion
 }

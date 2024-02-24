@@ -11,7 +11,7 @@ import {
   Respond409Conflict,
   Respond503ServiceUnavailable
 } from "@t/apiResponses";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class PredictionUtils {
   private readonly db: DbUtils;

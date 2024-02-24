@@ -1,6 +1,6 @@
 import DbUtils from "@u/dbUtils";
 import axios from "axios";
-import store from "@u/global";
+import store from "@u/store";
 
 export default class BirdFactTopicUtils {
   private readonly db: DbUtils;
@@ -15,8 +15,8 @@ export default class BirdFactTopicUtils {
     await this.db.setup();
   }
 
-  get = async (): Promise<string | undefined> =>
-    await this.db.getRandom<string>(this.path, []);
+  get = async (): Promise<string> =>
+    await this.db.getRandom<string>(this.path, []) ?? "most interesting features";
 
   getAll = async (): Promise<string[]> =>
     await this.db.get<string[]>(this.path, []) ?? [];
