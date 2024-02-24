@@ -8,7 +8,7 @@ export default class MastodonApi {
 
   private readonly birdFact: BirdFactUtils;
   private readonly mastodon: MastodonUtils;
-  private readonly accessTokenVar: string = "MASTODON_ACCESS_TOKEN";
+  private readonly accessTokenVar: string = "BOTSINSPACE_ACCESS_TOKEN";
 
   constructor() {
     const accessToken = process.env[this.accessTokenVar];
