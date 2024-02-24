@@ -1,5 +1,6 @@
 import { iNaturalistData } from "@t/birdFacts";
-import { getRandomItem } from "./array";
+import { SearchResult, TaxonPhotoResult } from "@t/iNaturalist";
+import { getRandomItem } from "@u/array";
 
 export default class iNaturalistUtils {
   public static readonly apiBase: string = "https://api.inaturalist.org/v1/search?";
@@ -10,17 +11,17 @@ export default class iNaturalistUtils {
       sources: "taxa",
       order: "desc"
     }));
-    const data = await response.json();
-    const bird = data.results[0].record;
+    const results: SearchResult[] = (await response.json()).results;
+    const bird = results[0].record;
 
     const photo = bird.taxon_photos && bird.taxon_photos.length
-      ? getRandomItem<{ [key: string]: object }>(bird.taxon_photos)?.photo
+      ? getRandomItem<TaxonPhotoResult>(bird.taxon_photos)?.photo
       : bird.default_photo;
 
     return {
-      id: bird.id,
-      photo_url: photo.original_url ?? photo.medium_url,
-      photo_attribution: photo.attribution
+      id: bird.id.toString(),
+      photo_url: photo?.original_url ?? photo?.medium_url,
+      photo_attribution: photo?.attribution
     }
   }
 }

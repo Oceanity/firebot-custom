@@ -1,10 +1,12 @@
 import { MastodonContext, RemoteAttachment } from "@t/mastodon";
 import FileUtils from "./fileUtils";
 import store from "@u/global";
+import { BirdFact } from "@t/birdFacts";
 
 export default class MastodonUtils {
   private readonly headers: HeadersInit;
   private readonly apiBase: string;
+  private readonly birdFact: BirdFactUtils;
 
   constructor(context: MastodonContext) {
     if (!context.accessToken) throw "Could not read MASTODON_ACCESS_TOKEN";
@@ -22,10 +24,11 @@ export default class MastodonUtils {
 
     if (attachments && attachments.length) {
       for(const attach of attachments) {
+        if (!attach.url) continue;
         const formData = new FormData();
 
         formData.append("file", await FileUtils.createBlobFromUrl(attach.url));
-        formData.append("description", attach.description);
+        formData.append("description", attach.description ?? "");
 
         const uploadResp = await fetch(`${apiBase}/v2/media`, {
           method: "POST",
@@ -64,4 +67,32 @@ export default class MastodonUtils {
 
     return true;
   }
+
+  postBirbFact = async (): Promise<void> => {
+    const fact = await this.birdFact.putBirdFact();
+    const attachments = [];
+    if (fact.iNatData) {
+      attachments.push({
+        url: fact.iNatData.photo_url,
+        description: `Photo of a ${fact.bird.name}`
+      });
+    }
+
+    const status = this.mastodon.formatBirbFactStatus(fact);
+    const response = await this.mastodon.postNewMessage(status, attachments);
+
+    res.send(response);
+  }
+
+  formatBirbFactStatus = (fact: BirdFact): string =>
+    [
+      `🐦 Birb Fact #${fact.id}`,
+      "────────────────────────────",
+      [
+        `${fact.bird.name} (${fact.bird.sciName})`,
+        `${fact.message}`,
+        `${fact.iNatData ? `📸 ${fact.iNatData.photo_attribution}` : ""}`
+      ].join("\n\n")
+    ].join("\n").trim();
+
 }

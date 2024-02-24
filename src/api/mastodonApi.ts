@@ -33,8 +33,7 @@ export default class MastodonApi {
     return result;
   }
 
-  private postBirbFactHandler = async (req: Request, res: Response): Promise<boolean> => {
-    store.modules.logger.info("Posting birb fact to Mastodon...");
+  private postBirbFactHandler = async (req: Request, res: Response): Promise<void> => {
     const fact = await this.birdFact.putBirdFact();
     const attachments = [];
     if (fact.iNatData) {
@@ -44,19 +43,9 @@ export default class MastodonApi {
       });
     }
 
-    const status = [
-        `🐦 Birb Fact #${fact.id}`,
-        "────────────────────────────",
-        [
-          `${fact.bird.name} (${fact.bird.sciName})`,
-          `${fact.message}`,
-          `${fact.iNatData ? `📸 ${fact.iNatData.photo_attribution}` : ""}`
-        ].join("\n\n")
-      ].join("\n").trim();
-
+    const status = this.mastodon.formatBirbFactStatus(fact);
     const response = await this.mastodon.postNewMessage(status, attachments);
 
     res.send(response);
-    return response;
   }
 }

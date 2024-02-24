@@ -76,9 +76,9 @@ export default class DbUtils {
     try {
       if (!allowDuplicates) {
         const find = await this.db?.find<T>(path, d => d == data);
-        if (find) throw new Error(`Item already exists in table ${path} in db ${this.path}`);
+        if (find) throw `Item already exists in table ${path} in db ${this.path}`;
       }
-      this.db?.push(path, [data], override);
+      this.db?.push(path, _.isArray(data) ? data : [data], override);
       return true;
     } catch (err) {
       store.modules.logger.error(err as string);

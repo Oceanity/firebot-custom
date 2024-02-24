@@ -3,8 +3,8 @@ export type Media = {
 }
 
 export type RemoteAttachment = {
-  url: string;
-  description: string;
+  url?: string;
+  description?: string;
 }
 
 export type MastodonContext = {

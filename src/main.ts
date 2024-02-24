@@ -43,7 +43,7 @@ const script: Firebot.CustomScript<Params> = {
     useRouter(store.modules.httpServer);
 
     // Setup API Endpoints
-    await new PredictionApi("./db/predictions.db").setup();
+    await new PredictionApi().setup();
     await new BirdFactApi().setup();
     await new BirdFactTopicApi().setup();
     await new BirdFactLoadingMessageApi().setup();

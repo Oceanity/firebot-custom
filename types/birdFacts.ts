@@ -27,20 +27,8 @@ export type DeleteLoadingMessageRequest = {
   search: string;
 }
 
-
-export type CreateTopicRequest = {
-  topic: string;
-}
-
-export type UpdateTopicRequest = {
-  oldTopic: string;
-  newTopic: string;
-}
-
-export type DeleteTopicRequest = CreateTopicRequest;
-
 export type iNaturalistData = {
   id: string,
-  photo_url: string,
-  photo_attribution: string
+  photo_url?: string,
+  photo_attribution?: string
 }
