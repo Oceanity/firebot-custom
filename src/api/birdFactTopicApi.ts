@@ -30,7 +30,6 @@ export default class BirdFactTopicApi {
     if (!result) throw "Could not register all endpoints for Birb Fact Topics API";
   }
 
-  //#region Topic Handlers
   private getAllTopicsHandler = async (req: Request, res: Response): Promise<void> => {
     res.send(await this.topics.getAll());
   }
@@ -58,5 +57,4 @@ export default class BirdFactTopicApi {
   //     return endpointErrorHandler(store.modules.logger, err, res);
   //   }
   // }
-  //#endregion
 }
