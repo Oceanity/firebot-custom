@@ -4,7 +4,6 @@
 const fs = require("fs-extra");
 const path = require("path");
 const { scriptOutputName } = require("../package.json");
-const { env } = require("yargs");
 
 const getAppDataFolderPath = () => {
   switch (process.platform) {
