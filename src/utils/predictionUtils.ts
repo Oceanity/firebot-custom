@@ -7,30 +7,28 @@ import {
 } from "@t/predictions";
 import { getRandomItem } from "@u/array";
 import DbUtils from "./dbUtils";
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import {
   Respond409Conflict,
   Respond503ServiceUnavailable
 } from "@t/apiResponses";
+import store from "@u/store";
 
 export default class PredictionUtils {
   private readonly db: DbUtils;
-  private readonly modules: ScriptModules;
 
   /**
    * Instantiates PredictionUtils class
    * @param {string} path Relative path to save db to
    * @param {ScriptModules} modules ScriptModules reference
    */
-  constructor(path: string, modules: ScriptModules) {
-    this.db = new DbUtils(path, modules);
-    this.modules = modules;
+  constructor(path: string) {
+    this.db = new DbUtils(path);
   }
 
   /**
    * Initializes DbUtils
    */
-  public async setup(): Promise<void> {
+  setup = async(): Promise<void> => {
     await this.db.setup();
   }
 
@@ -38,8 +36,8 @@ export default class PredictionUtils {
    * Gets all Predictions in db as PredictionLibrary
    * @returns {Promise<PredictionLibrary>} all Predictions stored in db as PredictionLibrary
    */
-  public async getAll(): Promise<PredictionLibrary | undefined> {
-    const { logger } = this.modules;
+  getAll = async (): Promise<PredictionLibrary | undefined> => {
+    const { logger } = store.modules;
 
     if (!this.db.isReady()) {
       logger.error(`Prediction Db is not ready, cannot getAll()`);
@@ -55,7 +53,7 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {PredictionOptions} PredictionOptions retrieved from db at key `slug`
    */
-  public async getPredictionOptions(slug: string): Promise<PredictionOptionsResponse> {
+  getPredictionOptions = async (slug: string): Promise<PredictionOptionsResponse> => {
     if (!this.isDbReady(`getPredictionOptions(${slug})`))
       return Respond409Conflict("Prediction Db not ready") as PredictionOptionsResponse;
 
@@ -74,7 +72,7 @@ export default class PredictionUtils {
    * @param {PredictionOptions} options PredictionOptions to save to the db
    * @returns {boolean} `true` if operation completed successfully
    */
-  public async pushPredictionOptions(slug: string, options: PredictionOptions): Promise<boolean> {
+  pushPredictionOptions = async (slug: string, options: PredictionOptions): Promise<boolean> => {
     if (!this.isPredictionOptionsValid(options)) return false;
 
     return await this.db.push<PredictionOptions>(`/${slug}`, options);
@@ -85,7 +83,7 @@ export default class PredictionUtils {
    * @param {string} slug Key where PredictionOptions are saved in the db
    * @returns {Prediction} Randomized Prediction object
    */
-  public async getRandomPrediction(slug: string): Promise<PredictionResponse | undefined> {
+  getRandomPrediction = async (slug: string): Promise<PredictionResponse | undefined> => {
     if (!this.isDbReady(`getRandomPrediction(${slug})`))
       return Respond503ServiceUnavailable("Prediction Db not ready") as PredictionResponse;
 
@@ -113,7 +111,7 @@ export default class PredictionUtils {
    * @returns {boolean} `true` if `db` has completed `setup()`
    */
   private isDbReady = (method?: string): boolean => {
-    const { logger } = this.modules;
+    const { logger } = store.modules;
 
     if (!this.db.isReady()) {
       logger.error(`Prediction Db is not ready, cannot complete method ${method}`);

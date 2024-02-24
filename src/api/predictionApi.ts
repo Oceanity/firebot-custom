@@ -1,104 +1,86 @@
-import { ScriptModules } from "@crowbartools/firebot-custom-scripts-types";
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
 import PredictionUtils from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
-import { resolve } from "path";
+import store from "@u/store";
 
 export default class PredictionApi {
   private predictions: PredictionUtils;
-  private modules: ScriptModules;
-
-  private readonly prefix: string = "oceanity";
-  private readonly base: string = "/predictions";
+  private readonly route: string = "/predictions";
 
   /**
    * Instantiates Prediction API class
    * @param {string} path Path to save Predictions.db file
    * @param {ScriptModules} modules ScriptModules reference
    */
-  constructor(
-    path: string = resolve(__dirname, "./db/predictions.db"),
-    modules: ScriptModules,
-  ) {
-    this.modules = modules;
-    this.predictions = new PredictionUtils(path, modules);
+  constructor(path: string = "./db/predictions.db") {
+    this.predictions = new PredictionUtils(path);
   }
 
   /**
    * Initializes DbUtils and registers endpoints
    */
-  public async setup(): Promise<void> {
+  setup = async (): Promise<void> => {
     await this.predictions.setup();
     await this.registerEndpoints();
-  }
+  };
 
   /**
    * Registers Prediction endpoints to Firebot's HttpServer
    * @returns {boolean} `true` if operation was successful
    */
-  private async registerEndpoints(): Promise<boolean> {
-    const { modules, prefix, base } = this;
-    const { httpServer, logger } = modules;
+  private registerEndpoints = async (): Promise<boolean> => {
+    const { route } = this;
+    const { modules, prefix } = store;
+    const { httpServer } = modules;
 
     let response = true;
 
-    logger.info("Registering Prediction Endpoints....");
-    response &&= httpServer.registerCustomRoute(prefix, base, "GET", this.getPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, base, "POST", this.postPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${base}/titles`, "GET", this.getPredictionTitlesHandler);
+    response &&= httpServer.registerCustomRoute(prefix, route, "GET", this.getPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, route, "POST", this.postPredictionHandler);
+    response &&= httpServer.registerCustomRoute(prefix, `${route}/titles`, "GET", this.getPredictionTitlesHandler);
 
     return response;
-  }
+  };
 
   /**
    * Unregisters Prediction Endpoints from Firebot's HttpServer
    * @returns {boolean} `true` if operation was successful
    */
-  public async unregisterEndpoints(): Promise<boolean> {
-    const { modules, prefix, base } = this;
-    const { httpServer, logger } = modules;
+  unregisterEndpoints = async (): Promise<boolean> => {
+    const { route } = this;
+    const { modules, prefix } = store;
+    const { httpServer } = modules;
 
     let response = true;
 
-    logger.info("Unregistering Prediction Endpoints...");
-    response &&= httpServer.unregisterCustomRoute(prefix, base, "GET");
-    response &&= httpServer.unregisterCustomRoute(prefix, base, "POST");
-    response &&= httpServer.unregisterCustomRoute(prefix, `${base}/titles`, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, route, "GET");
+    response &&= httpServer.unregisterCustomRoute(prefix, route, "POST");
+    response &&= httpServer.unregisterCustomRoute(prefix, `${route}/titles`, "GET");
 
     return response;
-  }
+  };
 
   /**
    * GET : /oceanity/predictions
    */
   private getPredictionHandler = async (req: Request, res: Response): Promise<void> => {
-    const { modules, predictions } = this;
+    const { predictions } = this;
     const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
 
-    modules.logger.info("Getting random Prediction...");
     const response = await predictions.getRandomPrediction(slug);
 
-    if (!response) {
-      modules.logger.info(`Could not get random prediction from slug ${slug}`);
-      return;
-    }
-
-    if (response.status != 200) {
-      modules.logger.error(`Error ${response.status}: ${response.message}`);
-      return;
-    }
-
-    modules.logger.info(`Pulled prediction ${response.prediction.title}`);
+    if (!response) throw `Could not get random prediction from slug ${slug}`;
+    if (response.status != 200) throw `Error ${response.status}: ${response.message}`;
 
     const predictionResponse: CreatePredictionRequest = {
       ...response.prediction,
       broadcaster_id,
-      prediction_window: 300
-    }
+      prediction_window: 300,
+    };
 
     res.send(predictionResponse);
-  }
+  };
 
   /**
    * POST : /oceanity/predictions
@@ -110,7 +92,7 @@ export default class PredictionApi {
     predictions.pushPredictionOptions(slug, { titleChoices, outcomeChoices });
 
     res.send(true);
-  }
+  };
 
   /**
    * GET : /oceanity/predictions/titles?slug=<slug>
@@ -131,7 +113,7 @@ export default class PredictionApi {
     res.send({
       status: response.status,
       titles: titleChoices,
-      count: titleChoices.length
+      count: titleChoices.length,
     });
-  }
+  };
 }

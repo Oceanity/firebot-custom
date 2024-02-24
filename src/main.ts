@@ -1,6 +1,13 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
 import useRouter from "@/router";
 import PredictionApi from "@api/predictionApi";
+import BirdFactApi from "./api/birdFactApi";
+import MastodonApi from "./api/mastodonApi";
+import { resolve } from "path";
+import * as dotenv from "dotenv";
+import store from "@u/store";
+import BirdFactTopicApi from "./api/birdFactTopicApi";
+import BirdFactLoadingMessageApi from "./api/birdFactLoadingMessageApi";
 
 type Params = {
   message: string;
@@ -26,13 +33,21 @@ const script: Firebot.CustomScript<Params> = {
     },
   }),
   run: async (runRequest) => {
-    const { modules } = runRequest;
-    const { httpServer } = modules;
-    useRouter(httpServer);
+    // Config .env vars
+    dotenv.config({ path: resolve(__dirname, "./.env") });
 
-    // Predictions
-    const predictionApi = new PredictionApi("./db/predictions.db", modules);
-    await predictionApi.setup();
+    // Set Globals
+    store.modules = runRequest.modules;
+
+    // Use Router
+    useRouter(store.modules.httpServer);
+
+    // Setup API Endpoints
+    await new PredictionApi("./db/predictions.db").setup();
+    await new BirdFactApi().setup();
+    await new BirdFactTopicApi().setup();
+    await new BirdFactLoadingMessageApi().setup();
+    await new MastodonApi().setup();
   },
 };
 
