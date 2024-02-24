@@ -33,8 +33,8 @@ export type CreateTopicRequest = {
 }
 
 export type UpdateTopicRequest = {
-  oldTopic: string;
-  newTopic: string;
+  search: string;
+  replace: string;
 }
 
 export type DeleteTopicRequest = CreateTopicRequest;

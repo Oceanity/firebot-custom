@@ -1,3 +1,4 @@
+import { DeleteResults, PatchResults } from "@t/db";
 import DbUtils from "./dbUtils";
 
 export default class BirdFactLoadingMessageUtils {
@@ -5,7 +6,7 @@ export default class BirdFactLoadingMessageUtils {
   private readonly path: string = "/loadingMessages";
 
   constructor() {
-    this.db = new DbUtils("./db/birbFactLoadingMessages.db");
+    this.db = new DbUtils("./db/birbFactLoadingMessages");
   }
 
   setup = async (): Promise<void> => {
@@ -22,10 +23,10 @@ export default class BirdFactLoadingMessageUtils {
   push = async (loadingMessage: string): Promise<boolean> =>
     await this.db.push<string>(this.path, loadingMessage);
 
-  update = async (search: string, replace: string): Promise<string | undefined> =>
+  update = async (search: string, replace: string): Promise<PatchResults<string> | undefined> =>
     await this.db.update<string>(this.path, search, replace);
 
-  delete = async (search: string): Promise<string | undefined> =>
+  delete = async (search: string): Promise<DeleteResults<string> | undefined> =>
     await this.db.delete<string>(this.path, search);
   //#endregion
 }

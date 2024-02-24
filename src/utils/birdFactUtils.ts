@@ -52,7 +52,7 @@ export default class BirdFactUtils {
       message: chatResponse.choices.pop()?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
     }
 
-    await this.db.push<BirdFact[]>(this.path, [newFact], false);
+    await this.db.push<BirdFact>(this.path, newFact, false);
     return newFact;
   }
 

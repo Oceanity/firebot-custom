@@ -14,7 +14,7 @@ export default class MastodonApi {
     const accessToken = process.env[this.accessTokenVar];
     if (!accessToken) throw "Cannot get Access Token from .env";
 
-    this.birdFact = new BirdFactUtils("./db/mastodonBirbFacts.db");
+    this.birdFact = new BirdFactUtils("./db/mastodonBirbFacts");
     this.mastodon = new MastodonUtils({ apiBase: "https://botsin.space/api", accessToken: accessToken ?? "" });
   }
 

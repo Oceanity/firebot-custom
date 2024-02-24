@@ -1,16 +1,16 @@
 import DbUtils from "@u/dbUtils";
 import axios from "axios";
 import store from "@u/store";
+import { PatchResults } from "@t/db";
 
 export default class BirdFactTopicUtils {
   private readonly db: DbUtils;
   private readonly path: string = "/topics";
 
   constructor() {
-    this.db = new DbUtils("./db/birbFactTopics.db");
+    this.db = new DbUtils("./db/birbFactTopics");
   }
 
-  //#region Class Methods
   setup = async (): Promise<void> => {
     await this.db.setup();
   }
@@ -23,7 +23,9 @@ export default class BirdFactTopicUtils {
 
   push = async (topic: string): Promise<boolean> =>
     await this.db.push<string>(this.path, topic);
-  //#endregion
+
+  update = async (search: string, replace: string): Promise<PatchResults<string> | undefined> =>
+    await this.db.update<string>(this.path, search, replace);
 
   //#region Static Methods
   static fetch = async (): Promise<string | undefined> =>
