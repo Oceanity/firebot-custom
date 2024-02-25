@@ -9,5 +9,6 @@ export type RemoteAttachment = {
 
 export type MastodonContext = {
   apiBase: string;
-  accessToken: string;
+  accessToken?: string;
+  accessTokenEnvVar?: string
 }

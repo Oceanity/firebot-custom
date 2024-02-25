@@ -8,6 +8,7 @@ import * as dotenv from "dotenv";
 import store from "@u/store";
 import BirdFactTopicApi from "./api/birdFactTopicApi";
 import BirdFactLoadingMessageApi from "./api/birdFactLoadingMessageApi";
+import MastodonBirdFactApi from "./api/mastodonBirdFactApi";
 
 type Params = {
   message: string;
@@ -48,6 +49,7 @@ const script: Firebot.CustomScript<Params> = {
     await new BirdFactTopicApi().setup();
     await new BirdFactLoadingMessageApi().setup();
     await new MastodonApi().setup();
+    await new MastodonBirdFactApi().setup();
   },
 };
 

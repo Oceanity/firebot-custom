@@ -66,6 +66,17 @@ export default class DbUtils {
   getRandom = async <T>(path: string, defaults?: T[]): Promise<T | undefined> =>
     _.nth((await this.get<T[]>(path, defaults)), getRandomInteger(await this.count(path)));
 
+
+  set = async <T>(path: string, data: T): Promise<boolean> => {
+    try {
+      this.db?.push(path, data, true);
+      return true;
+    } catch (err) {
+      store.modules.logger.error(err as string);
+      return false;
+    }
+  }
+
   /**
    *  Puts data into loaded db at given path
    * @param {string} path Path of data to pull from db
@@ -77,7 +88,7 @@ export default class DbUtils {
     try {
       if (!allowDuplicates) {
         const find = await this.db?.find<T>(path, d => d == data);
-        if (find) throw new Error(`Item already exists in table ${path} in db ${this.path}`);
+        if (find) throw `Item already exists in table ${path} in db ${this.path}`;
       }
       this.db?.push(`${path}[]`, data, override);
       return true;
