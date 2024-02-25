@@ -39,6 +39,7 @@ export default class MastodonApi {
     const idResponse = await fetch(`${store.firebotApiBase}/mastodon/birdFacts/nextId`);
     const id = (await idResponse.json()).id ?? 1;
     const fact = await this.birdFact.createNew(id);
+    store.modules.logger.info(`Birb Fact #${fact.id}: ${fact.message} (topic ${fact.topic})`);
     const attachments = [];
     if (fact.iNatData) {
       attachments.push({
