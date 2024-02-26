@@ -11,3 +11,7 @@ export type ResponseData = {
 export type Parameters = {
   [key: string]: string;
 };
+
+export type TriforceOpenAiRequest = {
+  message: string;
+}

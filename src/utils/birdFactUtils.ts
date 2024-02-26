@@ -1,19 +1,17 @@
 // import DbUtils from "./dbUtils";
 import { BirdFact } from "@t/birdFacts";
-import OpenApiUtils from "./openAiUtils";
+import openAi from "./openAiUtils";
 import NuthatchUtils from "./nuthatchUtils";
 import iNaturalistUtils from "./iNaturalistUtils";
 import BirdFactTopicUtils from "./birdFactTopicUtils";
 
 export default class BirdFactUtils {
   // private readonly db: DbUtils; want to move DB away from Bird utils to keep things less tangled
-  private readonly openAi: OpenApiUtils;
   private readonly nuthatch: NuthatchUtils;
   private readonly path: string = "/facts"
 
   constructor() {
     // this.db = new DbUtils(path);
-    this.openAi = new OpenApiUtils();
     this.nuthatch = new NuthatchUtils();
   }
 
@@ -23,7 +21,6 @@ export default class BirdFactUtils {
   }
 
   createNew = async (id?: number): Promise<BirdFact> => {
-    const { openAi } = this;
     const topic = await BirdFactTopicUtils.fetch() ?? "most interesting features";
     const bird = await this.nuthatch.getRandomBird();
 
@@ -49,7 +46,7 @@ export default class BirdFactUtils {
       },
       iNatData,
       topic,
-      message: chatResponse.choices.pop()?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
+      message: chatResponse?.message.content?.replace(/[\s\r\n]+/ig, " ").trim() ?? ""
     }
 
     return newFact;

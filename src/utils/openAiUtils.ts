@@ -1,30 +1,27 @@
 import OpenAI from "openai";
-import { ChatCompletionMessageParam, ChatCompletionCreateParamsNonStreaming } from "openai/resources";
+import { ChatCompletionMessageParam } from "openai/resources";
+import { ChatCompletion } from "openai/resources";
+import env from "@u/envUtils";
+import store from "@u/store";
+import { getRandomItem } from "./array";
 
-export default class OpenApiUtils {
-  private readonly openAi: OpenAI;
-  private readonly chatApiBase: string;
-  private readonly baseBody: ChatCompletionCreateParamsNonStreaming;
+export default class OpenAiUtils {
+  static chatCompletion = async (messages: ChatCompletionMessageParam[], temperature: number | null = 1.4, model: string = "gpt-3.5-turbo"): Promise<ChatCompletion.Choice> => {
+    store.modules.logger.info(`Temp: ${temperature}, Model: ${model}, Messages:`);
+    store.modules.logger.info(JSON.stringify(messages));
 
-  constructor() {
-    this.openAi = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    })
-    this.chatApiBase = "https://api.openai.com/v1/completions";
-    this.baseBody = {
-      model: "gpt-3.5-turbo-instruct",
-      max_tokens: 1024,
-      temperature: 1.4,
-      messages: []
-    }
-  }
-
-  chatCompletion = async (messages: ChatCompletionMessageParam[]) => {
-    const chatCompletion = await this.openAi.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      temperature: 1.4,
-      messages
+    const openAi = new OpenAI({
+      apiKey: env.getEnvVarOrThrow("OPENAI_API_KEY")
     });
+
+    const chatCompletion = getRandomItem<ChatCompletion.Choice>(
+      (await openAi.chat.completions.create({
+        model,
+        temperature,
+        messages
+      })).choices
+    );
+    if (!chatCompletion) throw "Could not get completion from provided prompt";
 
     return chatCompletion;
   }
