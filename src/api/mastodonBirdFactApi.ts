@@ -26,7 +26,6 @@ export default class MastodonBirdFactApi {
 
   private getNextIdHandler = async (req: Request, res: Response): Promise<void> => {
     const id = await this.db.get<number>("/nextBirdFactId") ?? 1;
-    store.modules.logger.info(`${id}`);
     res.send({ id });
   }
 

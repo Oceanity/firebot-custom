@@ -25,7 +25,6 @@ export default class OpenAiApi {
 
   private static postCompletionHandler = async (req: Request, res: Response) => {
     const { messages, model, temperature } = req.body as ChatCompletionCreateParamsNonStreaming;
-    store.modules.logger.info(JSON.stringify(req.body));
 
     res.send(await OpenAiUtils.chatCompletion(messages, temperature, model));
   }
