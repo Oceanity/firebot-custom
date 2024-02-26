@@ -1,6 +1,7 @@
 import BirdFactUtils from "@u/birdFactUtils";
 import MastodonUtils from "@u/mastodonUtils";
 import { Request, Response } from "express";
+import env from "@u/envUtils";
 import store from "@u/store";
 
 export default class MastodonApi {
@@ -11,10 +12,10 @@ export default class MastodonApi {
   private readonly accessTokenVar: string = "BOTSINSPACE_ACCESS_TOKEN";
 
   constructor() {
-    const accessToken = process.env[this.accessTokenVar];
+    const accessToken = env.getEnvVarOrThrow("BOTSINSPACE_ACCESS_TOKEN");
     if (!accessToken) throw "Cannot get Access Token from .env";
 
-    this.birdFact = new BirdFactUtils("./db/mastodonBirbFacts");
+    this.birdFact = new BirdFactUtils();
     this.mastodon = new MastodonUtils({ apiBase: "https://botsin.space/api", accessToken: accessToken ?? "" });
   }
 
@@ -33,9 +34,12 @@ export default class MastodonApi {
     return result;
   }
 
-  private postBirbFactHandler = async (req: Request, res: Response): Promise<boolean> => {
+  private postBirbFactHandler = async (req: Request, res: Response): Promise<void> => {
     store.modules.logger.info("Posting birb fact to Mastodon...");
-    const fact = await this.birdFact.putBirdFact();
+    const idResponse = await fetch(`${store.firebotApiBase}/mastodon/birdFacts/nextId`);
+    const id = (await idResponse.json()).id ?? 1;
+    const fact = await this.birdFact.createNew(id);
+    store.modules.logger.info(`Birb Fact #${fact.id}: ${fact.message} (topic ${fact.topic})`);
     const attachments = [];
     if (fact.iNatData) {
       attachments.push({
@@ -54,9 +58,13 @@ export default class MastodonApi {
         ].join("\n\n")
       ].join("\n").trim();
 
-    const response = await this.mastodon.postNewMessage(status, attachments);
+    const response = await MastodonUtils.postNewMessage(store.getBotsinSpaceContext(), status, attachments);
+    if (!response) throw "Failed to post new birb fact to Mastodon";
+
+    await fetch(`${store.firebotApiBase}/mastodon/birdFacts/nextId`, {
+      method: "POST"
+    });
 
     res.send(response);
-    return response;
   }
 }

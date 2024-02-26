@@ -1,23 +1,26 @@
 import { MastodonContext, RemoteAttachment } from "@t/mastodon";
 import FileUtils from "./fileUtils";
+import DbUtils from "./dbUtils";
+import env from "@u/envUtils";
 import store from "@u/store";
 
 export default class MastodonUtils {
-  private readonly headers: HeadersInit;
-  private readonly apiBase: string;
+  private readonly db: DbUtils;
 
   constructor(context: MastodonContext) {
     if (!context.accessToken) throw "Could not read MASTODON_ACCESS_TOKEN";
 
-    this.apiBase = context.apiBase;
-    this.headers = {
-      "Authorization": `Bearer ${context.accessToken}`
-    }
+    this.db = new DbUtils("./db/mastodon");
   }
 
-  postNewMessage = async(status: string, attachments?: RemoteAttachment[]): Promise<boolean> => {
-    const { apiBase, headers } = this;
+  private getNextBirdFactId = async (): Promise<number> =>
+    await this.db.get<number>("/birdFacts/nextId", 1) ?? 1;
 
+  private incrementNextBirdFactId = async (): Promise<boolean> =>
+    await this.db.set<number>("/birdFacts/nextId", await this.getNextBirdFactId() + 1);
+
+  static postNewMessage = async (context: MastodonContext, status: string, attachments?: RemoteAttachment[]): Promise<boolean> => {
+    const headers = MastodonUtils.getHeaders(context);
     const attachmentIds: string[] = [];
 
     if (attachments && attachments.length) {
@@ -27,7 +30,7 @@ export default class MastodonUtils {
         formData.append("file", await FileUtils.createBlobFromUrl(attach.url));
         formData.append("description", attach.description);
 
-        const uploadResp = await fetch(`${apiBase}/v2/media`, {
+        const uploadResp = await fetch(`${context.apiBase}/v2/media`, {
           method: "POST",
           headers,
           body: formData
@@ -47,7 +50,7 @@ export default class MastodonUtils {
         visibility: "unlisted"
       });
 
-    const response = await fetch(`${apiBase}/v1/statuses`, {
+    const response = await fetch(`${context.apiBase}/v1/statuses`, {
       method: "POST",
       headers: {
         ...headers,
@@ -63,5 +66,16 @@ export default class MastodonUtils {
     }
 
     return true;
+  }
+
+  private static getHeaders = (context: MastodonContext): HeadersInit =>
+    ({
+      "Authorization": `Bearer ${MastodonUtils.getAccessTokenOrThrow(context)}`
+    });
+
+  private static getAccessTokenOrThrow = (context: MastodonContext): string => {
+    if (context.accessToken) return context.accessToken;
+    if (context.accessTokenEnvVar) return env.getEnvVarOrThrow(context.accessTokenEnvVar);
+    throw `Could not get access token from process.env for ${context.apiBase}`;
   }
 }

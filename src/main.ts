@@ -8,6 +8,8 @@ import * as dotenv from "dotenv";
 import store from "@u/store";
 import BirdFactTopicApi from "./api/birdFactTopicApi";
 import BirdFactLoadingMessageApi from "./api/birdFactLoadingMessageApi";
+import MastodonBirdFactApi from "./api/mastodonBirdFactApi";
+import OpenAiApi from "./api/openAiApi";
 
 type Params = {
   message: string;
@@ -43,11 +45,13 @@ const script: Firebot.CustomScript<Params> = {
     useRouter(store.modules.httpServer);
 
     // Setup API Endpoints
+    await OpenAiApi.registerEndpoints();
     await new PredictionApi("./db/predictions.db").setup();
     await new BirdFactApi().setup();
     await new BirdFactTopicApi().setup();
     await new BirdFactLoadingMessageApi().setup();
     await new MastodonApi().setup();
+    await new MastodonBirdFactApi().setup();
   },
 };
 

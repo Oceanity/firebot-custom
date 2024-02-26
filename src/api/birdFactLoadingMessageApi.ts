@@ -41,7 +41,6 @@ export default class BirdFactLoadingMessageApi {
 
   private putHandler = async (req: Request, res: Response): Promise<void> => {
     const { message } = req.body as CreateLoadingMessageRequest;
-    store.modules.logger.info(message);
     res.send(await this.loadingMessages.push(message));
   }
 

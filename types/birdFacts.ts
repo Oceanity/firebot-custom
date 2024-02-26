@@ -1,5 +1,5 @@
 export type BirdFact = {
-  id: number,
+  id?: number,
   bird: Bird,
   message: string,
   topic?: string
