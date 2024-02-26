@@ -1,14 +1,27 @@
 {
-    "compilerOptions": {
-        "outDir": "./dist/",
-        "target": "ES6",
-        "module": "CommonJS",
-        "allowSyntheticDefaultImports": true,
-        "noImplicitAny": true,
-        "sourceMap": true,
-        "moduleResolution": "node",
-        "experimentalDecorators": true,
-        "downlevelIteration": true
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "./dist/",
+    "target": "ES6",
+    "module": "CommonJS",
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@t/*": ["./types/*"],
+      "@u/*": ["./src/utils/*"],
+      "@api/*": ["./src/api/*"]
     },
-    "include": ["./src/**/*"]
+    "lib": [
+      "es5", "es6", "dom", "dom.iterable"
+    ]
+  },
+  "include": ["./src/**/*", "./types/**/*"]
 }
