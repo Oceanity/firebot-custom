@@ -10,6 +10,7 @@ import BirdFactTopicApi from "./api/birdFactTopicApi";
 import BirdFactLoadingMessageApi from "./api/birdFactLoadingMessageApi";
 import MastodonBirdFactApi from "./api/mastodonBirdFactApi";
 import OpenAiApi from "./api/openAiApi";
+import HelperApi from "./api/helperApi";
 
 type Params = {
   message: string;
@@ -45,6 +46,7 @@ const script: Firebot.CustomScript<Params> = {
     useRouter(store.modules.httpServer);
 
     // Setup API Endpoints
+    await HelperApi.registerEndpoints();
     await OpenAiApi.registerEndpoints();
     await new PredictionApi("./db/predictions.db").setup();
     await new BirdFactApi().setup();
