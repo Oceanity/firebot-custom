@@ -53,7 +53,7 @@ const script: Firebot.CustomScript<Params> = {
     await new BirdFactTopicApi().setup();
     await new BirdFactLoadingMessageApi().setup();
     await new MastodonApi().setup();
-    await new MastodonBirdFactApi().setup();
+    await MastodonBirdFactApi.registerEndpoints();
   },
 };
 

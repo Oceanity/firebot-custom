@@ -1,36 +1,59 @@
 import { Request, Response } from "express";
-import DbUtils from "@u/dbUtils";
+import { HttpMethod } from "@t/requests";
+import db from "@u/staticDbUtils";
 import store from "@u/store";
 
+/**
+ * Api for getting data for mastodon bird facts
+ */
 export default class MastodonBirdFactApi {
-  private readonly db: DbUtils;
-  private readonly route: string = "/mastodon/birdFacts";
+  /**
+   * The db file where mastodon data is stored
+   */
+  private static readonly path: string = "./db/mastodon";
 
-  constructor() {
-    this.db = new DbUtils("./db/mastodon");
-  }
+  /**
+   * The route for this api
+   */
+  private static readonly route: string = "/mastodon/birdFacts";
 
-  setup = async (): Promise<void> => {
+  /**
+   * The route in the db file where the next id for bird facts is stored
+   */
+  private static readonly nextIdRoute: string = "/nextBirdFactId";
+
+  /**
+   * Initializes the api
+   */
+  static registerEndpoints = async (): Promise<void> => {
     const { modules, prefix } = store;
     const { httpServer } = modules;
 
-    await this.db.setup();
+    const endpoints: readonly [string, HttpMethod, (req: Request, res: Response) => Promise<void>][] = [
+      [`${this.route}/nextId`, "GET", this.getNextIdHandler],
+      [`${this.route}/nextId`, "POST", this.incrementNextIdHandler],
+    ];
 
-    let response = true;
-
-    response &&= httpServer.registerCustomRoute(prefix, `${this.route}/nextId`, "GET", this.getNextIdHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${this.route}/nextId`, "POST", this.incrementNextIdHandler);
-
-    if (!response) throw "Could not register all endpoints for Mastodon Birb Fact Api";
+    for (const [route, method, handler] of endpoints) {
+      if (!httpServer.registerCustomRoute(prefix, route, method, handler)) {
+        throw "Could not register all endpoints for Mastodon Birb Fact Api";
+      }
+    }
   }
 
-  private getNextIdHandler = async (req: Request, res: Response): Promise<void> => {
-    const id = await this.db.get<number>("/nextBirdFactId") ?? 1;
+  /**
+   * Handler for getting the next id
+   */
+  private static getNextIdHandler = async (req: Request, res: Response): Promise<void> => {
+    const id = await db.get<number>(this.path, this.nextIdRoute) ?? 1;
     res.send({ id });
   }
 
-  private incrementNextIdHandler = async (req: Request, res: Response): Promise<void> => {
-    const id = await this.db.get<number>("/nextBirdFactId", 1) ?? 0;
-    res.send(await this.db.set<number>("/nextBirdFactId", id + 1));
+  /**
+   * Handler for incrementing the next id
+   */
+  private static incrementNextIdHandler = async (req: Request, res: Response): Promise<void> => {
+    const id = await db.get<number>(this.path, this.nextIdRoute, 1) ?? 0;
+    res.send(await db.push<number>(this.path, this.nextIdRoute, id + 1));
   }
 }
