@@ -1,56 +1,44 @@
 import { Request, Response } from "express";
-import store from "@u/store";
-import BirdFactLoadingMessageUtils from "@u/birdFactLoadingMessageUtils";
-import { CreateLoadingMessageRequest, DeleteLoadingMessageRequest, UpdateLoadingMessageRequest } from "@t/birdFacts";
+import loadingMessages from "@u/birdFactLoadingMessageUtils";
+import { CreateLoadingMessageRequest } from "@t/birdFacts";
+import api from "@u/apiUtils";
 
 export default class BirdFactLoadingMessageApi {
-  private readonly loadingMessages: BirdFactLoadingMessageUtils;
-  private readonly route: string = "/birdFacts/loadingMessages";
+  private static readonly route = "/birdFacts/loadingMessages";
 
-  constructor() {
-    this.loadingMessages = new BirdFactLoadingMessageUtils();
+  static registerEndpoints() {
+    api.registerAllEndpoints(
+      [
+        [this.route, "GET", this.getMessageHandler],
+        [`${this.route}/all`, "GET", this.getAllMessagesHandler],
+        [this.route, "PUT", this.addMessageHandler],
+        // [this.route, "PATCH", this.updateHandler],
+        // [`${this.route}/delete`, "POST", this.deleteHandler],
+      ],
+      "Bird Fact Loading Message",
+    );
   }
 
-  setup = async (): Promise<void> => {
-    await this.loadingMessages.setup();
-    await this.registerEndpoints();
+  private static async getMessageHandler(req: Request, res: Response) {
+    res.send(await loadingMessages.getRandomMessageAsync());
   }
 
-  private registerEndpoints = async (): Promise<boolean> => {
-    const { modules, prefix } = store;
-    const { httpServer } = modules;
-
-    let response = true;
-
-    response &&= httpServer.registerCustomRoute(prefix, this.route, "GET", this.getHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${this.route}/all`, "GET", this.getAllHandler);
-    response &&= httpServer.registerCustomRoute(prefix, this.route, "PUT", this.putHandler);
-    response &&= httpServer.registerCustomRoute(prefix, this.route, "PATCH", this.updateHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${this.route}/delete`, "POST", this.deleteHandler);
-
-    return response;
+  private static async getAllMessagesHandler(req: Request, res: Response) {
+    res.send(await loadingMessages.getAllMessagesAsync());
   }
 
-  private getHandler = async (req: Request, res: Response): Promise<void> => {
-    res.send(await this.loadingMessages.get());
-  }
-
-  private getAllHandler = async (req: Request, res: Response): Promise<void> => {
-    res.send(await this.loadingMessages.getAll());
-  }
-
-  private putHandler = async (req: Request, res: Response): Promise<void> => {
+  private static async addMessageHandler(req: Request, res: Response) {
     const { message } = req.body as CreateLoadingMessageRequest;
-    res.send(await this.loadingMessages.push(message));
+    res.send(await loadingMessages.addMessageAsync(message));
   }
 
-  private updateHandler = async (req: Request, res: Response): Promise<void> => {
-    const { search, replace } = req.body as UpdateLoadingMessageRequest;
-    res.send(await this.loadingMessages.update(search, replace));
-  }
+  // private static async updateHandler(req: Request, res: Response) {
+  //   const { search, replace } = req.body as UpdateLoadingMessageRequest;
+  //   res.send(await loadingMessages.update(search, replace));
+  // }
 
-  private deleteHandler = async (req: Request, res: Response): Promise<void> => {
-    const { search } = req.body as DeleteLoadingMessageRequest;
-    res.send(await this.loadingMessages.delete(search));
-  }
+  // private static async deleteHandler(req: Request, res: Response) {
+  //   const { search } = req.body as DeleteLoadingMessageRequest;
+  //   res.send(await loadingMessages.delete(search));
+  // }
 }

@@ -15,3 +15,14 @@ export type Parameters = {
 export type TriforceOpenAiRequest = {
   message: string;
 }
+
+export type HttpMethod =
+    | "GET"
+    | "POST"
+    | "PUT"
+    | "PATCH"
+    | "DELETE"
+    | "HEAD"
+    | "CONNECT"
+    | "OPTIONS"
+    | "TRACE";

@@ -1,30 +1,19 @@
 import { Request, Response } from "express";
-// import { getRequestDataFromUri } from "@u/requestUtils";
-import BirdFactUtils from "@u/birdFactUtils";
-import store from "@u/store";
+import birdFacts from "@u/birdFactUtils";
+import api from "@u/apiUtils";
 
 export default class BirdFactApi {
-  private static readonly route: string= "/birdFacts";
-  private readonly birdFactUtils: BirdFactUtils;
+  private static readonly route: string = "/birdFacts";
 
-  constructor() {
-    this.birdFactUtils = new BirdFactUtils();
-  }
-
-  setup = async () => {
-    await this.birdFactUtils.setup();
-    await this.registerEndpoints();
-  }
-
-  private registerEndpoints = async () => {
-    const { route } = BirdFactApi;
-    const { modules, prefix } = store;
-    const { httpServer } = modules;
-
-    // Birb Fact Endpoints
-    // httpServer.registerCustomRoute(prefix, route, "GET", this.getHandler);
-    // httpServer.registerCustomRoute(prefix, `${route}/all`, "GET", this.getAllHandler);
-    httpServer.registerCustomRoute(prefix, route, "PUT", this.putHandler);
+  static registerEndpoints() {
+    api.registerAllEndpoints(
+      [
+        // [`${route}/:id`, "GET", this.getHandler],
+        // [`${route}/all`, "GET", this.getAllHandler],
+        [`${this.route}`, "GET", this.generateNewFactHandler],
+      ],
+      "Birb Fact",
+    );
   }
 
   /*private getHandler = async (req: Request, res: Response): Promise<void> => {
@@ -36,7 +25,7 @@ export default class BirdFactApi {
     res.send(await this.birdFactUtils.getAllBirdFacts());
   }*/
 
-  private putHandler = async (req: Request, res: Response): Promise<void> => {
-    res.send(await this.birdFactUtils.createNew());
+  private static async generateNewFactHandler(req: Request, res: Response) {
+    res.send(await birdFacts.generateNewFactAsync());
   }
 }

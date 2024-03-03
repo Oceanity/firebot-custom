@@ -27,9 +27,8 @@ export type DeleteLoadingMessageRequest = {
   search: string;
 }
 
-
 export type CreateTopicRequest = {
-  topic: string;
+  topic: string | string[];
 }
 
 export type UpdateTopicRequest = {

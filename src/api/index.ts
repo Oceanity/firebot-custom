@@ -9,14 +9,14 @@ import PredictionApi from "@api/predictionApi";
 import TwitchApi from "@api/twitchApi";
 
 const registerAllEndpoints = () => {
-    HelperApi.registerEndpoints();
-    OpenAiApi.registerEndpoints();
-    PredictionApi.registerEndpoints();
-    BirdFactApi.registerEndpoints();
-    BirdFactTopicApi.registerEndpoints();
-    BirdFactLoadingMessageApi.registerEndpoints();
-    MastodonApi.registerEndpoints();
-    MastodonBirdFactApi.registerEndpoints();
-    TwitchApi.registerEndpoints();
-}
+  HelperApi.registerEndpoints();
+  OpenAiApi.registerEndpoints();
+  PredictionApi.registerEndpoints();
+  BirdFactApi.registerEndpoints();
+  BirdFactTopicApi.registerEndpoints();
+  BirdFactLoadingMessageApi.registerEndpoints();
+  MastodonApi.registerEndpoints();
+  MastodonBirdFactApi.registerEndpoints();
+  TwitchApi.registerEndpoints();
+};
 export default registerAllEndpoints;

@@ -1,51 +1,63 @@
 import { Bird } from "@t/birdFacts";
-import { getRandomInteger } from "@u/numbers"
-import store from "@u/store";
+import db from "@/utils/dbUtils";
+import env from "@u/envUtils";
+import helper from "@u/helperUtils";
 
+/**
+ * Utility class for interacting with the Nuthatch API.
+ */
 export default class NuthatchUtils {
-  private readonly apiBase = "https://nuthatch.lastelm.software/v2";
-  private readonly headers: Headers;
-  private readonly birdsPerPage: number = 100;
+  private static readonly apiBase = "https://nuthatch.lastelm.software/v2";
+  private static readonly path = "./db/nuthatch";
+  private static readonly headers = new Headers({
+    "Content-Type": "application/json",
+    "API-Key": env.getEnvVarOrThrow("NUTHATCH_API_KEY"),
+  });
+  private static readonly birdsPerPage = 100;
 
-  private pages: number = 1;
+  /**
+   * Updates the cached data asynchronously.
+   * @return A promise that resolves when the update is complete.
+   */
+  static async updateCachedDataAsync() {
+    const lastChecked = await db.getAsync<Date>(this.path, "/lastChecked", new Date());
 
-  constructor() {
-    this.headers = new Headers();
-    this.headers.set("Content-Type", "application/json");
-    this.headers.set("API-Key", process.env["NUTHATCH_API_KEY"] ?? "");
-  }
+    if (lastChecked && helper.isDateOlderThanDays(lastChecked, 14)) return;
 
-  setup = async () : Promise<void> => {
-    const { apiBase, birdsPerPage, headers } = this;
-    let hasFoundEnd: boolean = false;
+    db.push<Date>(this.path, "/lastChecked", new Date());
+    db.push<unknown[]>(this.path, "/birds", [], true);
 
-    if (!this.isApiKeySet()) {
-      store.modules.logger.error("Could not load Nuthatch API Key");
-      return;
-    }
+    let hasFoundEnd = false;
+    let page = 1;
 
     while (!hasFoundEnd) {
-      const response = await fetch(`${apiBase}/birds?page=${this.pages}&pageSize=${birdsPerPage}`, { headers });
+      const response = await fetch(`${this.apiBase}/birds?page=${page++}&pageSize=${this.birdsPerPage}`, {
+        headers: this.headers,
+      });
       const data = await response.json();
 
       if (data.entities && data.entities.length) {
-        this.pages++;
-      }
-      else {
-        hasFoundEnd = true;
-      }
+        if (!(await this.pushPageAsync(data.entities))) throw "Could not push Nuthatch entities to db";
+      } else hasFoundEnd = true;
     }
   }
 
-  getRandomBird = async(): Promise<Bird | undefined> => {
-    const { apiBase, headers } = this;
+  /**
+   * Pushes a page of entities to the db
+   * @param entities The page of entities to push
+   * @returns A promise that resolves to true if the push was successful, false otherwise
+   */
+  private static pushPageAsync = async (entities: Bird[]): Promise<boolean> =>
+    await db.push<Bird[]>(this.path, "/birds", entities);
 
-    if (!this.isApiKeySet()) throw "Could not load Nuthatch API Key";
+  /**
+   * Retrieves a random bird from the nuthatch API
+   * @returns A promise that resolves to a bird object from the API, or undefined if the API key is not set
+   */
+  static async getRandomBirdAsync(): Promise<Bird | undefined> {
+    const bird = await db.getRandom<Bird>(this.path, "/birds", []);
 
-    const response = await fetch(`${apiBase}/birds?page=${getRandomInteger(this.pages)}&pageSize=${this.birdsPerPage}`, { headers });
-    const data = await response.json();
-
-    const bird = data.entities[getRandomInteger(data.entities.length)];
+    if (!bird) return undefined;
 
     // Catch [x or y] in scientific name
     const orMatch = /\[(.+)\s+or\s+(.+)\]/i;
@@ -53,7 +65,4 @@ export default class NuthatchUtils {
 
     return bird;
   }
-
-  private isApiKeySet = (): boolean =>
-    process.env.NUTHATCH_API_KEY != undefined;
 }

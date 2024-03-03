@@ -1,37 +1,16 @@
 import { Request, Response } from "express";
-import store from "@u/store";
+import api from "@u/apiUtils";
+import helper from "@u/helperUtils";
 
 export default class HelperApi {
   private static readonly route: string = "/helper";
 
-  static registerEndpoints = async (): Promise<void> => {
-    const { modules, prefix } = store;
-    const { httpServer } = modules;
-
-    let result = true;
-
-    result &&= httpServer.registerCustomRoute(prefix, `${this.route}/isLinkImage`, "POST", this.isLinkImageHandler);
-
-    if (!result) throw "Could not register all endpoints for Helper Api"
+  static registerEndpoints() {
+    api.registerAllEndpoints([[`${this.route}/isLinkImage`, "POST", this.isLinkImageHandler]], "Helper");
   }
 
-  private static isLinkImageHandler = async (req: Request, res: Response): Promise<void> => {
+  private static async isLinkImageHandler(req: Request, res: Response) {
     const { url } = req.body;
-
-    store.modules.logger.info(url);
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Accept": "*/*"
-      }
-    });
-
-    if (!response) throw `Could not fetch URL: ${url}`;
-
-    const type = response.headers.get("content-type");
-    store.modules.logger.info(type ?? "unknown type");
-
-    res.send({ isImage: type?.startsWith("image/") });
+    res.send(await helper.isLinkImage(url));
   }
 }

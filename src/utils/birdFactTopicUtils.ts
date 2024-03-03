@@ -1,40 +1,42 @@
-import DbUtils from "@u/dbUtils";
-import axios from "axios";
-import store from "@u/store";
-import { PatchResults } from "@t/db";
+import db from "@/utils/dbUtils";
 
-export default class BirdFactTopicUtils {
-  private readonly db: DbUtils;
-  private readonly path: string = "/topics";
+/**
+ * Class for handling birb fact topics.
+ */
+export default class birdFactTopicUtils {
+  private static readonly path = "./db/birbFactTopics";
+  private static readonly route = "/topics";
+  private static readonly defaultVal = "most interesting features";
 
-  constructor() {
-    this.db = new DbUtils("./db/birbFactTopics");
-  }
+  /**
+   * Gets a random topic from the database.
+   * @returns A promise that resolves to a topic or default topic if the database is empty.
+   */
+  static getRandomTopicAsync = async (): Promise<string> =>
+    (await db.getRandom<string>(this.path, this.route, [this.defaultVal])) ?? this.defaultVal;
 
-  setup = async (): Promise<void> => {
-    await this.db.setup();
-  }
+  /**
+   * Gets all topics from the database.
+   * @returns A promise that resolves to an array of topics or array of default topics if the database is empty.
+   */
+  static getAllTopicsAsync = async (): Promise<string[]> =>
+    (await db.getAsync<string[]>(this.path, this.route, [this.defaultVal])) ?? [this.defaultVal];
 
-  get = async (): Promise<string> =>
-    await this.db.getRandom<string>(this.path, []) ?? "most interesting features";
+  /**
+   * Adds a topic to the database.
+   * @param topic The topic to add.
+   * @returns A promise that resolves to `true` if the topic was added.
+   */
+  static addTopicAsync = async (topic: string | string[]): Promise<boolean> =>
+    await db.push<string | string[]>(this.path, `${this.route}[]`, topic);
 
-  getAll = async (): Promise<string[]> =>
-    await this.db.get<string[]>(this.path, []) ?? [];
-
-  push = async (topic: string): Promise<boolean> =>
-    await this.db.push<string>(this.path, topic);
-
-  update = async (search: string, replace: string): Promise<PatchResults<string> | undefined> =>
-    await this.db.update<string>(this.path, search, replace);
-
-  //#region Static Methods
-  static fetch = async (): Promise<string | undefined> =>
-    (await axios.get<string>(`${store.firebotApiBase}/birdFacts/topics`, {
-      headers: {
-        "Content-Length": 0,
-        "Content-Type": "text/plain"
-      },
-      responseType: "text"
-    })).data;
-  //#endregion
+  /**
+   * Updates a topic in the database.
+   * @param search The search query.
+   * @param replace The replacement value.
+   * @returns A promise that resolves to the patch results or `undefined` if no matches were found.
+   */
+  // static async update(search: string, replace: string): Promise<PatchResults<string> | undefined> {
+  //   return await this.db.update<string>(this.path, search, replace);
+  // }
 }

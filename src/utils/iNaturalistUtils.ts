@@ -1,10 +1,20 @@
 import { iNaturalistData } from "@t/birdFacts";
 import { getRandomItem } from "./array";
 
+/**
+ * Utility class for interacting with the iNaturalist API
+ */
 export default class iNaturalistUtils {
-  public static readonly apiBase: string = "https://api.inaturalist.org/v1/search?";
+  private static readonly apiBase: string = "https://api.inaturalist.org/v1/search?";
 
-  public static getBirdInfo = async (name: string): Promise<iNaturalistData | undefined> => {
+  /**
+   * Retrieves information about a bird from the iNaturalist API
+   * @param name The name of the bird to search for
+   * @returns A promise that resolves to the bird's information, or undefined if no bird was found
+   */
+  static getBirdInfo = async (
+    name: string
+  ): Promise<iNaturalistData | undefined> => {
     const response = await fetch(this.apiBase + new URLSearchParams({
       q: name,
       sources: "taxa",
@@ -24,3 +34,4 @@ export default class iNaturalistUtils {
     }
   }
 }
+

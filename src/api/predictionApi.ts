@@ -1,119 +1,56 @@
 import { Request, Response } from "express";
 import { getRequestDataFromUri } from "@u/requestUtils";
-import PredictionUtils from "@u/predictionUtils";
+import predictions from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
+import api from "@u/apiUtils";
 import store from "@u/store";
 
 export default class PredictionApi {
-  private predictions: PredictionUtils;
-  private readonly route: string = "/predictions";
+  private static readonly route = "/predictions";
 
-  /**
-   * Instantiates Prediction API class
-   * @param {string} path Path to save Predictions.db file
-   * @param {ScriptModules} modules ScriptModules reference
-   */
-  constructor(path: string = "./db/predictions.db") {
-    this.predictions = new PredictionUtils(path);
+  static registerEndpoints() {
+    api.registerAllEndpoints(
+      [
+        [`${this.route}/:slug`, "GET", this.getPredictionHandler],
+        [`${this.route}/:slug`, "POST", this.startPredictionHandler],
+        [`${this.route}/:slug/titles`, "GET", this.getPredictionTitlesHandler],
+      ],
+      "Prediction",
+    );
   }
 
-  /**
-   * Initializes DbUtils and registers endpoints
-   */
-  setup = async (): Promise<void> => {
-    await this.predictions.setup();
-    await this.registerEndpoints();
-  };
+  private static async getPredictionHandler(req: Request, res: Response) {
+    const { broadcaster_id } = getRequestDataFromUri(req.url).params;
+    const { slug } = req.params;
 
-  /**
-   * Registers Prediction endpoints to Firebot's HttpServer
-   * @returns {boolean} `true` if operation was successful
-   */
-  private registerEndpoints = async (): Promise<boolean> => {
-    const { route } = this;
-    const { modules, prefix } = store;
-    const { httpServer } = modules;
+    store.modules.logger.info(JSON.stringify(req.body));
 
-    let response = true;
-
-    response &&= httpServer.registerCustomRoute(prefix, route, "GET", this.getPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, route, "POST", this.postPredictionHandler);
-    response &&= httpServer.registerCustomRoute(prefix, `${route}/titles`, "GET", this.getPredictionTitlesHandler);
-
-    return response;
-  };
-
-  /**
-   * Unregisters Prediction Endpoints from Firebot's HttpServer
-   * @returns {boolean} `true` if operation was successful
-   */
-  unregisterEndpoints = async (): Promise<boolean> => {
-    const { route } = this;
-    const { modules, prefix } = store;
-    const { httpServer } = modules;
-
-    let response = true;
-
-    response &&= httpServer.unregisterCustomRoute(prefix, route, "GET");
-    response &&= httpServer.unregisterCustomRoute(prefix, route, "POST");
-    response &&= httpServer.unregisterCustomRoute(prefix, `${route}/titles`, "GET");
-
-    return response;
-  };
-
-  /**
-   * GET : /oceanity/predictions
-   */
-  private getPredictionHandler = async (req: Request, res: Response): Promise<void> => {
-    const { predictions } = this;
-    const { slug, broadcaster_id } = getRequestDataFromUri(req.url).params;
-
-    const response = await predictions.getRandomPrediction(slug);
-
+    const response = await predictions.getRandomPredictionAsync(req.url);
     if (!response) throw `Could not get random prediction from slug ${slug}`;
-    if (response.status != 200) throw `Error ${response.status}: ${response.message}`;
 
     const predictionResponse: CreatePredictionRequest = {
-      ...response.prediction,
+      ...response,
       broadcaster_id,
       prediction_window: 300,
     };
 
     res.send(predictionResponse);
-  };
+  }
 
-  /**
-   * POST : /oceanity/predictions
-   */
-  private postPredictionHandler = async (req: Request, res: Response) => {
-    const { predictions } = this;
+  private static async startPredictionHandler(req: Request, res: Response) {
     const { slug, titleChoices, outcomeChoices } = req.body as CreatePredictionOptionsRequest;
 
-    predictions.pushPredictionOptions(slug, { titleChoices, outcomeChoices });
+    res.send(await predictions.addPredictionOptionsAsync(slug, { titleChoices, outcomeChoices }));
+  }
 
-    res.send(true);
-  };
-
-  /**
-   * GET : /oceanity/predictions/titles?slug=<slug>
-   */
-  private getPredictionTitlesHandler = async (req: Request, res: Response) => {
-    const { predictions } = this;
+  private static async getPredictionTitlesHandler(req: Request, res: Response) {
     const { slug } = getRequestDataFromUri(req.url).params;
 
-    const response = await predictions.getPredictionOptions(slug);
+    const response = await predictions.getPredictionOptionsAsync(slug);
+    if (!response) throw `Could not get prediction titles from slug ${slug}`;
 
-    if (!response.options) {
-      res.send(response);
-      return false;
-    }
+    const { titleChoices } = response;
 
-    const { titleChoices } = response.options;
-
-    res.send({
-      status: response.status,
-      titles: titleChoices,
-      count: titleChoices.length,
-    });
-  };
+    res.send(titleChoices);
+  }
 }
