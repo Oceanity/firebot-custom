@@ -13,9 +13,9 @@ export default class HelperUtils {
   static async isLinkImage(url: string): Promise<boolean> {
     const response = await axios.get(url, {
       headers: {
-        "Accept": "*/*"
+        Accept: "*/*",
       },
-      responseType: "stream"
+      responseType: "stream",
     });
 
     if (!response) throw `Could not fetch URL: ${url}`;
@@ -31,7 +31,5 @@ export default class HelperUtils {
    * @returns A boolean indicating whether the date is older than the specified number of days.
    */
   static isDateOlderThanDays = (date: Date, days: number) =>
-    (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24) > days;
+    Math.ceil(Math.abs(Date.now() - date.getTime()) / (1000 * 60 * 60 * 24)) > days;
 }
-
-

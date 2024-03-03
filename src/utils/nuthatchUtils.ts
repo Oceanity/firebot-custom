@@ -2,6 +2,7 @@ import { Bird } from "@t/birdFacts";
 import db from "@/utils/dbUtils";
 import env from "@u/envUtils";
 import helper from "@u/helperUtils";
+import store from "@u/store";
 
 /**
  * Utility class for interacting with the Nuthatch API.
@@ -21,10 +22,15 @@ export default class NuthatchUtils {
    * @return A promise that resolves when the update is complete.
    */
   static async updateCachedDataAsync() {
+    store.modules.logger.info("Updating cached Nuthatch data...");
+
     const dateString = await db.getAsync<string>(this.path, "/lastChecked", new Date().toLocaleString());
     const lastChecked = dateString ? new Date(dateString) : undefined;
 
-    if (lastChecked && helper.isDateOlderThanDays(lastChecked, 14)) return;
+    if (lastChecked && !helper.isDateOlderThanDays(lastChecked, 14)) {
+      store.modules.logger.info("Cached Nuthatch data is up to date.");
+      return;
+    }
 
     db.push<string>(this.path, "/lastChecked", new Date().toLocaleString());
     db.push<unknown[]>(this.path, "/birds", [], true);
