@@ -4,10 +4,11 @@ import { resolve } from "path";
 import * as dotenv from "dotenv";
 import store from "@u/store";
 import registerAllEndpoints from "@/api";
+import nuthatch from "@u/nuthatchUtils";
 
 type Params = {
   message: string;
-}
+};
 
 const script: Firebot.CustomScript<Params> = {
   getScriptManifest: () => ({
@@ -40,6 +41,9 @@ const script: Firebot.CustomScript<Params> = {
 
     // Setup API Endpoints
     registerAllEndpoints();
+
+    // Check cached Nuthatch birds
+    await nuthatch.updateCachedDataAsync();
   },
 };
 

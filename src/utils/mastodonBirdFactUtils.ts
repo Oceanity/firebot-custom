@@ -11,10 +11,10 @@ import store from "@u/store";
 export default class MastodonBirdFactUtils {
   private static readonly path = "./db/mastodon";
   private static readonly route = "/birdFacts";
-  private static readonly context: MastodonContext = {
+  private static getContext = (): MastodonContext => ({
     apiBase: "https://botsin.space/api",
     accessToken: env.getEnvVarOrThrow("BOTSINSPACE_ACCESS_TOKEN"),
-  };
+  });
 
   /**
    * Gets the next ID to be used for a new bird fact
@@ -62,7 +62,7 @@ export default class MastodonBirdFactUtils {
       .join("\n")
       .trim();
 
-    const response = await mastodon.postNewMessage(this.context, status, attachments);
+    const response = await mastodon.postNewMessage(this.getContext(), status, attachments);
     if (!response) throw "Failed to post new birb fact to Mastodon";
 
     await this.pushNextBirdFactIdAsync(id + 1);

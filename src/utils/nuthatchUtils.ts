@@ -9,22 +9,24 @@ import helper from "@u/helperUtils";
 export default class NuthatchUtils {
   private static readonly apiBase = "https://nuthatch.lastelm.software/v2";
   private static readonly path = "./db/nuthatch";
-  private static readonly headers = new Headers({
-    "Content-Type": "application/json",
-    "API-Key": env.getEnvVarOrThrow("NUTHATCH_API_KEY"),
-  });
   private static readonly birdsPerPage = 100;
+  private static getHeaders = () =>
+    new Headers({
+      "Content-Type": "application/json",
+      "API-Key": env.getEnvVarOrThrow("NUTHATCH_API_KEY"),
+    });
 
   /**
    * Updates the cached data asynchronously.
    * @return A promise that resolves when the update is complete.
    */
   static async updateCachedDataAsync() {
-    const lastChecked = await db.getAsync<Date>(this.path, "/lastChecked", new Date());
+    const dateString = await db.getAsync<string>(this.path, "/lastChecked", new Date().toLocaleString());
+    const lastChecked = dateString ? new Date(dateString) : undefined;
 
     if (lastChecked && helper.isDateOlderThanDays(lastChecked, 14)) return;
 
-    db.push<Date>(this.path, "/lastChecked", new Date());
+    db.push<string>(this.path, "/lastChecked", new Date().toLocaleString());
     db.push<unknown[]>(this.path, "/birds", [], true);
 
     let hasFoundEnd = false;
@@ -32,7 +34,7 @@ export default class NuthatchUtils {
 
     while (!hasFoundEnd) {
       const response = await fetch(`${this.apiBase}/birds?page=${page++}&pageSize=${this.birdsPerPage}`, {
-        headers: this.headers,
+        headers: this.getHeaders(),
       });
       const data = await response.json();
 
