@@ -60,9 +60,9 @@ export default class CreditUtils {
     );
     if (currentSubs && (currentSubs["3000"].length || currentSubs["2000"].length || currentSubs["1000"].length)) {
       response += "<h1>Current Subscribers</h1>";
-      response += this.buildSubsSection(currentSubs["3000"], "current-tier3", "Tier 3", true);
-      response += this.buildSubsSection(currentSubs["2000"], "current-tier2", "Tier 2", true);
-      response += this.buildSubsSection(currentSubs["1000"], "current-tier1", "Tier 1", true);
+      response += this.buildSubsSection(currentSubs["3000"], "current-tier3", "Tier 3", "Tier 3", true);
+      response += this.buildSubsSection(currentSubs["2000"], "current-tier2", "Tier 2", "Tier 2", true);
+      response += this.buildSubsSection(currentSubs["1000"], "current-tier1", "Tier 1", "Tier 1", true);
     }
 
     // response += this.buildGiftsSection(credits.giftSubs, "Gift Subs");
@@ -81,7 +81,7 @@ export default class CreditUtils {
     if (!content || !content.length) return "";
     let response = `<section class="${className}"><h2>${title}</h2><ul>`;
     for (const entry of content) {
-      response += `<li data-id="${entry.id}">${showAvatars ? `<img src="${entry.profileImageUrl}">` : ""} ${entry.displayName}${addOn ? `<br />${addOn}` : ""}</li>`;
+      response += `<li data-id="${entry.id}">${showAvatars ? `<img src="${entry.profileImageUrl}">` : ""}<p><span class="name">${entry.displayName}</span><span class="add-on">${addOn ?? ""}</span></p></li>`;
     }
     response += `</ul></section>`;
     return response;
@@ -97,8 +97,20 @@ export default class CreditUtils {
     subscribers?: SubscriberEntry[],
     className = "subscribers",
     title = "Subscribers",
+    addOn = "Tier 1",
     showAvatars = false,
-  ) => (subscribers ? this.buildCreditsSection(className, title, subscribers, "Subscribed at", showAvatars) : "");
+  ) => (subscribers ? this.buildCreditsSection(className, title, subscribers, addOn, showAvatars) : "");
+
+  private static getDisplayTier(tier: SubTier) {
+    switch (tier) {
+      case "1000":
+        return "Tier 1";
+      case "2000":
+        return "Tier 2";
+      case "3000":
+        return "Tier 3";
+    }
+  }
 }
 class EmptyCredits implements Credits {
   followers = [];
@@ -129,6 +141,8 @@ type ModeratorEntry = CreditEntry;
 type SubscriberEntry = CreditEntry & {
   tier: string;
 };
+
+type SubTier = "1000" | "2000" | "3000";
 
 type SubsEntryCollection = {
   "1000": SubscriberEntry[];
