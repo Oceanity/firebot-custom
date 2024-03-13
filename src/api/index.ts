@@ -7,14 +7,18 @@ import MastodonBirdFactApi from "@api/mastodonBirdFactApi";
 import OpenAiApi from "@api/openAiApi";
 import PredictionApi from "@api/predictionApi";
 import TwitchApi from "@api/twitchApi";
+import EmoTrackerApi from "./emoTrackerApi";
+import CreditsApi from "./creditsApi";
 
 const registerAllEndpoints = () => {
-  HelperApi.registerEndpoints();
-  OpenAiApi.registerEndpoints();
-  PredictionApi.registerEndpoints();
   BirdFactApi.registerEndpoints();
   BirdFactTopicApi.registerEndpoints();
   BirdFactLoadingMessageApi.registerEndpoints();
+  CreditsApi.registerEndpoints();
+  EmoTrackerApi.registerEndpoints();
+  HelperApi.registerEndpoints();
+  OpenAiApi.registerEndpoints();
+  PredictionApi.registerEndpoints();
   MastodonApi.registerEndpoints();
   MastodonBirdFactApi.registerEndpoints();
   TwitchApi.registerEndpoints();

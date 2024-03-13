@@ -6,7 +6,22 @@ export default class TwitchApi {
   private static readonly route: string = "/twitch";
 
   static registerEndpoints() {
-    api.registerAllEndpoints([[`${this.route}/discordClips`, "POST", this.discordClipsHandler]], "Twitch");
+    api.registerAllEndpoints(
+      [
+        [`${this.route}/discordClips`, "POST", this.discordClipsHandler],
+        [`${this.route}/clips/lastChecked`, "GET", this.getLastCheckedClipsDateHandler],
+        [`${this.route}/clips/lastChecked`, "POST", this.setLastCheckedClipsDateHandler],
+      ],
+      "Twitch",
+    );
+  }
+
+  private static async getLastCheckedClipsDateHandler(req: Request, res: Response): Promise<void> {
+    res.send(await twitch.getLastCheckedClipsDateAsync());
+  }
+
+  private static async setLastCheckedClipsDateHandler(req: Request, res: Response): Promise<void> {
+    res.send(await twitch.setLastCheckedClipsDateAsync());
   }
 
   private static async discordClipsHandler(req: Request, res: Response): Promise<void> {

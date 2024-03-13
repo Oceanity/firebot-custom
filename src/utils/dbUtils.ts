@@ -44,9 +44,10 @@ export default class StaticDbUtils {
 
   static push = async <T>(path: string, route: string, data: T, override: boolean = false): Promise<boolean> => {
     const db = await this.setup(path);
+    store.modules.logger.info(`Pushing ${JSON.stringify(data)} to ${route} in ${path}`);
 
     try {
-      db.push(route, data, override);
+      await db.push(route, data, override);
       return true;
     } catch (err) {
       store.modules.logger.error(`Could not push to "${route}" in "${path}"`);

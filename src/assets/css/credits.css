@@ -1,0 +1,58 @@
+[data-id="21209878"] { display: none; }
+
+body {
+  font-size:4em;
+  background-color: rgba(0, 0, 0, 0);
+  margin: 0px auto;
+  color: #FFF;  /* The color of the font, change this to your preferred text color. */
+  font-family: "Cardenio Modern", sans-serif; /* Change this to your preferred font. */
+  font-weight: bolder;
+  text-align: center;
+  overflow: hidden;
+}
+
+img {
+  border-radius: 16px;
+  border: 16px inset gold;
+}
+
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+li {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-basis: 50%;
+}
+
+.marquee {
+  overflow: hidden;
+  height: 100%;
+}
+
+.marquee-container {
+  animation: marquee 60s linear infinite; /* Increase or decrease the 45s value to set how fast the text needs to scroll. */
+  height: auto;
+}
+
+@keyframes marquee {
+  0% { margin-top: 100vh }
+  100% { transform: translateY(-100%) }
+}
+
+h1 {
+  font-size: 35px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
+p {
+  font-size: 25px;
+  font-weight: 300;
+  margin: 0 0 40px 0;
+  white-space: pre-line;
+}
