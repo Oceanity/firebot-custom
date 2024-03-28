@@ -7,7 +7,6 @@ import db from "@/utils/dbUtils";
  */
 export default class PredictionUtils {
   private static readonly path = "./db/predictions";
-  private static readonly route = "/predictions";
   private static readonly defaultVals: PredictionLibrary = {};
 
   /**
@@ -15,7 +14,7 @@ export default class PredictionUtils {
    * @returns The predictions or undefined if there was an error
    */
   static getAllPredictionsAsync = async (): Promise<PredictionLibrary | undefined> =>
-    await db.getAsync<PredictionLibrary>(this.path, this.route, this.defaultVals);
+    await db.getAsync<PredictionLibrary>(this.path, "/", this.defaultVals);
 
   /**
    * Returns the prediction options for a given slug

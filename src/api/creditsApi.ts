@@ -10,6 +10,7 @@ export default class CreditsApi {
     api.registerAllEndpoints(
       [
         [this.route, "GET", this.getCreditsPageHandler],
+        [this.route, "DELETE", this.resetCreditsHandler],
         [`${this.route}/lastChecked`, "GET", this.lastCheckedHandler],
         // [`${this.route}/reset`, "POST", this.resetCreditsHandler],
         [`${this.route}/addFollower`, "POST", this.addFollowerHandler],

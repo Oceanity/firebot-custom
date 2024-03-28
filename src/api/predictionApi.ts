@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import { getRequestDataFromUri } from "@u/requestUtils";
 import predictions from "@u/predictionUtils";
 import { CreatePredictionOptionsRequest, CreatePredictionRequest } from "@t/predictions";
 import api from "@u/apiUtils";
-import store from "@u/store";
 
 export default class PredictionApi {
   private static readonly route = "/predictions";
@@ -11,22 +9,29 @@ export default class PredictionApi {
   static registerEndpoints() {
     api.registerAllEndpoints(
       [
-        [`${this.route}/:slug`, "GET", this.getPredictionHandler],
-        [`${this.route}/:slug`, "POST", this.startPredictionHandler],
-        [`${this.route}/:slug/titles`, "GET", this.getPredictionTitlesHandler],
+        [`${this.route}`, "GET", this.getPredictionHandler],
+        [`${this.route}`, "POST", this.startPredictionHandler],
+        [`${this.route}/titles`, "GET", this.getPredictionTitlesHandler],
       ],
       "Prediction",
     );
   }
 
   private static async getPredictionHandler(req: Request, res: Response) {
-    const { broadcaster_id } = getRequestDataFromUri(req.url).params;
-    const { slug } = req.params;
+    const { slug, broadcaster_id } = api.getRequestDataFromUri(req.url).params;
 
-    store.modules.logger.info(JSON.stringify(req.body));
+    if (!slug || !broadcaster_id) {
+      res.status(400);
+      res.send("Missing slug or broadcaster_id in request body");
+      return;
+    }
 
-    const response = await predictions.getRandomPredictionAsync(req.url);
-    if (!response) throw `Could not get random prediction from slug ${slug}`;
+    const response = await predictions.getRandomPredictionAsync(slug);
+    if (!response) {
+      res.status(404);
+      res.send(`Could not get random prediction from slug ${slug}`);
+      return;
+    }
 
     const predictionResponse: CreatePredictionRequest = {
       ...response,
@@ -44,7 +49,7 @@ export default class PredictionApi {
   }
 
   private static async getPredictionTitlesHandler(req: Request, res: Response) {
-    const { slug } = getRequestDataFromUri(req.url).params;
+    const { slug } = api.getRequestDataFromUri(req.url).params;
 
     const response = await predictions.getPredictionOptionsAsync(slug);
     if (!response) throw `Could not get prediction titles from slug ${slug}`;

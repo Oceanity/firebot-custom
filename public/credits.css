@@ -1,0 +1,129 @@
+[data-id="21209878"] { display: none; } /* Hide Oshi Credits */
+
+:root {
+  --gap: 20px;
+  --basis: 25%;
+  --image-width: 128px;
+  --image-radius: 16px;
+  --image-border: 4px solid #fff;
+  --li-font-size-main: 32px;
+  --li-font-size-sub: 0.8em;
+  --color: #fff;
+}
+
+.followers {
+  --gap: 10px;
+  --basis: 25%;
+  --image-width: 32px;
+  --image-radius: 4px;
+  --image-border: 2px solid #fff;
+  --li-font-size-main: 30px;
+}
+
+.subs-tier-3000 {
+  --basis: 50%;
+  --image-border: 12px inset gold;
+  --li-font-size-main: 56px;
+}
+
+.subs-tier-2000 {
+  --basis: 33.3333%;
+  --image-width: 96px;
+  --image-border: 9px inset silver;
+  --li-font-size-main: 44px;
+}
+
+.subs-tier-1000 {
+  --basis: 25%;
+  --image-width: 64px;
+  --image-border: 6px inset #Ab784E;
+  --li-font-size-main: 28px;
+}
+
+.moderators {
+  --basis: 25%;
+  --image-width: 64px;
+  --image-border: 6px inset purple;
+  --li-font-size-main: 28px;
+}
+
+body {
+  margin: 0px auto;
+  transition: opacity 1s ease;
+  opacity: 1 !important;
+  color: var(--color);  /* The color of the font, change this to your preferred text color. */
+  background-color: rgba(0, 0, 0, 0);
+  font-family: "iCiel Altus", sans-serif; /* Change this to your preferred font. */
+  font-weight: bolder;
+  text-align: center;
+  overflow: hidden;
+  padding: 0 40px;
+}
+
+h1 {
+  font-size: 48px;
+}
+
+h2 {
+  font-size: 56px;
+}
+
+img {
+  border-radius: var(--image-radius); 
+  border: var(--image-border);
+  width: var(--image-width);
+}
+
+ul {
+  display: flex;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  flex-basis: calc(var(--basis) - var(--gap));
+  gap: var(--gap);
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  font-size: var(--li-font-size-main);
+}
+
+p {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+}
+
+.add-on {
+  font-family: "iCiel Altus Serif", serif;
+  font-size: var(--li-font-size-sub);
+  font-weight: bolder;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.marquee {
+  overflow: hidden;
+  height: 100%;
+  display:flex;
+  flex-direction:column;
+  gap: var(--gap);
+}
+
+.marquee-container {
+  animation: marquee 50s linear infinite; /* Increase or decrease the 45s value to set how fast the text needs to scroll. */
+  height: auto;
+}
+
+@keyframes marquee {
+  0% { margin-top: 100vh }
+  100% { transform: translateY(-100%) }
+}

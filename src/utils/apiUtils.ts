@@ -1,14 +1,10 @@
 import { Request, Response } from "express";
-import { HttpMethod } from "@t/requests";
+import { HttpMethod, RequestData, Parameters } from "@t/requests";
 import store from "@u/store";
 
 type HttpServerRequest = (req: Request, res: Response) => Promise<void>;
 
-type ApiEndpoint = [
-  path: string,
-  method: HttpMethod,
-  handler: HttpServerRequest,
-]
+type ApiEndpoint = [path: string, method: HttpMethod, handler: HttpServerRequest];
 
 /**
  * Utility class for registering all API endpoints.
@@ -23,10 +19,26 @@ export default class ApiUtils {
   static registerAllEndpoints(endpoints: ApiEndpoint[], apiName?: string): void {
     for (const [path, method, handler] of endpoints) {
       if (!store.modules.httpServer.registerCustomRoute(store.prefix, path, method, handler)) {
-        throw `Could not register all endpoints for ${ apiName ? `${apiName} ` : ""}API`;
+        throw `Could not register all endpoints for ${apiName ? `${apiName} ` : ""}API`;
       }
     }
   }
+
+  static getRequestDataFromUri(url: string): RequestData {
+    const [root, query] = url.split("?");
+    if (!query) return { root, params: {} };
+
+    const vars = query.split("&");
+    const params: Parameters = {};
+
+    vars.forEach((v) => {
+      const [key, value] = v.split("=");
+      params[key] = value;
+    });
+
+    return {
+      root,
+      params,
+    };
+  }
 }
-
-

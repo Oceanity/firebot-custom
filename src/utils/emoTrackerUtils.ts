@@ -1,6 +1,5 @@
 import Fuse from "fuse.js";
 import db from "@u/dbUtils";
-import twitch from "@u/twitchUtils";
 
 type FindItemSlugResult = {
   game: string;
@@ -9,6 +8,8 @@ type FindItemSlugResult = {
   displayName?: string;
   closestMatches?: string[];
 };
+
+type EmoTrackerDb = { [game: string]: EmoTrackerItem[] };
 
 type EmoTrackerItem = {
   slug: string;
@@ -19,24 +20,9 @@ type EmoTrackerItem = {
 
 export default class EmoTrackerUtils {
   private static readonly path = "./db/emoTracker";
-  private static readonly route = "/emoTracker";
-  private static readonly emoTrackerId = "194652423";
-  private static readonly emoTrackerLogin = "emotracker";
 
-  static isEmoTrackerConnectedAsync = async (
-    clientId: string,
-    authToken: string,
-    broadcasterId: string,
-  ): Promise<boolean> =>
-    await twitch.isUserInChatAsync({
-      clientId,
-      authToken,
-      broadcasterId,
-      search: {
-        user_id: EmoTrackerUtils.emoTrackerId,
-        user_login: EmoTrackerUtils.emoTrackerLogin,
-      },
-    });
+  static getAllGameItemsAsync = async (): Promise<EmoTrackerDb> =>
+    (await db.getAsync<EmoTrackerDb>(this.path, `/`, {})) ?? {};
 
   /**
    * Find item slug for a given game and search query.
@@ -46,7 +32,7 @@ export default class EmoTrackerUtils {
    * @return The result of the search, or the closest matches if not found
    */
   static async findItemSlug(game: string, search: string): Promise<FindItemSlugResult> {
-    const result = await db.getAsync<EmoTrackerItem[]>(this.path, `${this.route}/${game}`, []);
+    const result = await db.getAsync<EmoTrackerItem[]>(this.path, `/${game}`, []);
     search = search.toLowerCase().trim();
 
     if (!result) throw `Could not get items from game ${game}`;
