@@ -11,6 +11,7 @@ export default class TwitchApi {
         [`${this.route}/discordClips`, "POST", this.discordClipsHandler],
         [`${this.route}/clips/lastChecked`, "GET", this.getLastCheckedClipsDateHandler],
         [`${this.route}/clips/lastChecked`, "POST", this.setLastCheckedClipsDateHandler],
+        [`${this.route}/raid/nonSubMessage`, "POST", this.nonSubMessageHandler],
       ],
       "Twitch",
     );
@@ -26,5 +27,10 @@ export default class TwitchApi {
 
   private static async discordClipsHandler(req: Request, res: Response): Promise<void> {
     res.send(twitch.postUnsharedClips());
+  }
+
+  private static async nonSubMessageHandler(req: Request, res: Response): Promise<void> {
+    const { message } = req.body;
+    res.send(await twitch.getNonSubMessage(message));
   }
 }

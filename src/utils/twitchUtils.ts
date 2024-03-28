@@ -1,5 +1,4 @@
 import db from "@/utils/dbUtils";
-import axios, { AxiosResponse } from "axios";
 import store from "@u/store";
 import open from "open";
 
@@ -59,82 +58,6 @@ export default class TwitchUtils {
   static setLastCheckedClipsDateAsync = async (): Promise<boolean> =>
     await db.push<string>(this.path, "/clipsLastChecked", new Date().toISOString());
 
-  /**
-   * Check if the user is in the chat by making a request to the Twitch API.
-   *
-   * @param {AxiosHeaders} headers - The headers for the request
-   * @param {TwitchChatterSearchRequest} request - The request containing user information
-   * @return {Promise<boolean>} A promise that resolves to a boolean indicating if the user is in the chat
-   */
-  static async isUserInChatAsync(request: TwitchChatterSearchRequest): Promise<boolean> {
-    const { clientId, authToken, search, broadcasterId } = request;
-    if (!search.user_login && !search.user_id) return false;
-
-    let endFound = false;
-    let pageToken = undefined;
-
-    while (!endFound) {
-      store.modules.logger.info(`Checking if ${search.user_login || search.user_id} is in chat ${broadcasterId}...`);
-      store.modules.logger.info(clientId, authToken);
-
-      const response: AxiosResponse = await axios.get("https://api.twitch.tv/helix/chat/chatters", {
-        params: {
-          broadcaster_id: broadcasterId,
-          moderator_id: broadcasterId,
-          first: 1000,
-          after: pageToken,
-        },
-        headers: {
-          "Client-ID": clientId,
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-      const body = response.data;
-
-      store.modules.logger.info(JSON.stringify(body));
-
-      if (body.error) {
-        store.modules.logger.error(JSON.stringify(body));
-        return false;
-      }
-
-      const chatters = body.data as TwitchChatter[];
-
-      store.modules.logger.info(JSON.stringify(chatters));
-
-      if (
-        chatters &&
-        chatters.some(
-          (a) =>
-            (search.user_id && a.user_id == search.user_id) || (search.user_login && a.user_login == search.user_login),
-        )
-      )
-        return true;
-
-      if (!body || !body.pagination || !body.pagination.cursor) {
-        endFound = true;
-      } else {
-        pageToken = body.pagination.cursor;
-      }
-    }
-
-    return false;
-  }
+  static getNonSubMessage = async (message: string): Promise<string | undefined> =>
+    message.replace(/oceani18[a-zA-Z0-9]+/g, "<3 ");
 }
-
-/** Chatters Endpoint Types */
-type TwitchChatterSearchRequest = {
-  clientId: string;
-  authToken: string;
-  broadcasterId: string;
-  search: {
-    user_login?: string;
-    user_id?: string;
-  };
-};
-
-type TwitchChatter = {
-  user_id: string;
-  user_login: string;
-  user_name: string;
-};
